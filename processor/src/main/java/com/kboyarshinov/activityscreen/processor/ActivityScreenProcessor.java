@@ -5,9 +5,16 @@ import com.kboyarshinov.activityscreens.annotation.Screen;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
+import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -44,8 +51,78 @@ public class ActivityScreenProcessor extends AbstractProcessor {
         return SourceVersion.latestSupported();
     }
 
+    /**
+     * Checks if the annotated element observes our rules
+     */
+    private boolean isValidClass(ScreenAnnotatedClass item) {
+
+        // Cast to TypeElement, has more type specific methods
+        TypeElement classElement = item.getTypeElement();
+
+        if (!classElement.getModifiers().contains(Modifier.PUBLIC)) {
+            error(classElement, "The class %s is not public.", classElement.getQualifiedName().toString());
+            return false;
+        }
+
+        // Check if it's an abstract class
+        if (classElement.getModifiers().contains(Modifier.ABSTRACT)) {
+            error(classElement, "The class %s is abstract. You can't annotate abstract classes with @%s.",
+                    classElement.getQualifiedName().toString(), Screen.class.getSimpleName());
+            return false;
+        }
+
+        // Check if it's an interface
+        if (classElement.getKind().isInterface()) {
+            error(classElement, "%s is interface. You can't annotate interfaces with @%s.",
+                    classElement.getQualifiedName().toString(), Screen.class.getSimpleName());
+            return false;
+        }
+
+        // Check Activity inheritance
+        TypeElement activityType = elementUtils.getTypeElement("android.app.Activity");
+        if (activityType == null || !typeUtils.isSubtype(classElement.asType(), activityType.asType())) {
+            error(classElement, "%s can only be used on activities, but %s is not a subclass of activity.",
+                    Screen.class.getSimpleName(), classElement.getQualifiedName());
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(Screen.class)) {
+            // Check if a class has been annotated with @Factory
+            if (annotatedElement.getKind() != ElementKind.CLASS) {
+                error(annotatedElement, "Only classes can be annotated with @%s", Screen.class.getSimpleName());
+                return true; // Exit processing
+            }
+            // We can cast it, because we know that it of ElementKind.CLASS
+            TypeElement typeElement = (TypeElement) annotatedElement;
+
+            ScreenAnnotatedClass annotatedClass = new ScreenAnnotatedClass(typeElement);
+            if (!isValidClass(annotatedClass)) {
+                return true; // Error message printed, exit processing
+            }
+
+            try {
+                annotatedClass.generateCode(elementUtils, filer);
+            } catch (IOException e) {
+                error(null, e.getMessage());
+            }
+        }
         return false;
+    }
+
+    /**
+     * Prints an error message
+     *
+     * @param e The element which has caused the error. Can be null
+     * @param msg The error message
+     * @param args if the error message contains %s, %d etc. placeholders this arguments will be used
+     * to
+     * replace them
+     */
+    public void error(Element e, String msg, Object... args) {
+        messager.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), e);
     }
 }
