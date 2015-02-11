@@ -21,11 +21,11 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- JavaWriter -->
+        <!-- JavaPoet -->
         <dependency>
             <groupId>com.squareup</groupId>
-            <artifactId>javawriter</artifactId>
-            <version>2.5.0</version>
+            <artifactId>javapoet</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
         <!-- Apache Commons StringUtils -->

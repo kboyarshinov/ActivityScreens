@@ -1,20 +1,21 @@
 package com.kboyarshinov.activityscreen.processor;
 
 import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
-import com.squareup.javawriter.JavaWriter;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.io.Writer;
-import java.util.EnumSet;
 
 /**
- * Holds the information about a class annotated with @Screen
+ * Holds the information about a class annotated with @ActivityScreen
  *
  * @author Kirill Boyarshinov
  */
@@ -40,33 +41,33 @@ public class ActivityScreenAnnotatedClass {
      * @throws IOException
      */
     public void generateCode(Elements elementUtils, Filer filer) throws IOException {
+        Name simpleName = annotatedClassElement.getSimpleName();
+        String screenClassName = simpleName + SUFFIX;
 
-        String factoryClassName = annotatedClassElement.getSimpleName() + SUFFIX;
+        ClassName contextClassName = ClassName.get("android.content", "Context");
+        ClassName intentClassName = ClassName.get("android.content", "Intent");
+        MethodSpec openMethod = MethodSpec.methodBuilder("open").
+                addModifiers(Modifier.PUBLIC, Modifier.STATIC).
+                returns(void.class).
+                addParameter(contextClassName, "context").
+                addStatement("$T intent = new $T(context, $L.class)", intentClassName, intentClassName, simpleName).
+                addStatement("context.startActivity(intent)").
+                build();
 
-        JavaFileObject jfo = filer.createSourceFile(annotatedClassElement.getQualifiedName() + SUFFIX);
-        Writer writer = jfo.openWriter();
-        JavaWriter jw = new JavaWriter(writer);
+        MethodSpec privateConstructor = MethodSpec.constructorBuilder().
+                addModifiers(Modifier.PRIVATE).build();
 
-        // Write package
+        TypeSpec screenClass = TypeSpec.classBuilder(screenClassName).
+                addModifiers(Modifier.PUBLIC, Modifier.FINAL).
+                addMethod(privateConstructor).
+                addMethod(openMethod).
+                build();
+
         PackageElement pkg = elementUtils.getPackageOf(annotatedClassElement);
-        if (!pkg.isUnnamed()) {
-            jw.emitPackage(pkg.getQualifiedName().toString());
-        } else {
-            jw.emitPackage("");
-        }
 
-        jw.emitImports("android.content.Context", "android.content.Intent");
-        jw.emitEmptyLine();
+        String packageName = pkg.isUnnamed() ? "" : pkg.getQualifiedName().toString();
+        JavaFile javaFile = JavaFile.builder(packageName, screenClass).build();
 
-        jw.beginType(factoryClassName, "class", EnumSet.of(Modifier.PUBLIC));
-        jw.emitEmptyLine();
-        jw.beginMethod("void", "open", EnumSet.of(Modifier.PUBLIC, Modifier.STATIC), "Context", "context");
-
-        jw.emitField("Intent", "intent", EnumSet.noneOf(Modifier.class), "new Intent(context, " + annotatedClassElement.getSimpleName() + ".class)");
-        jw.emitStatement("context.startActivity(intent)");
-
-        jw.endMethod();
-        jw.endType();
-        jw.close();
+        javaFile.writeTo(filer);
     }
 }
