@@ -1,10 +1,7 @@
 package com.kboyarshinov.activityscreen.processor;
 
 import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Modifier;
@@ -41,18 +38,11 @@ public class ActivityScreenAnnotatedClass {
      * @throws IOException
      */
     public void generateCode(Elements elementUtils, Filer filer) throws IOException {
-        Name simpleName = annotatedClassElement.getSimpleName();
-        String screenClassName = simpleName + SUFFIX;
+        Name activitySimpleName = annotatedClassElement.getSimpleName();
+        String screenClassName = activitySimpleName + SUFFIX;
 
-        ClassName contextClassName = ClassName.get("android.content", "Context");
-        ClassName intentClassName = ClassName.get("android.content", "Intent");
-        MethodSpec openMethod = MethodSpec.methodBuilder("open").
-                addModifiers(Modifier.PUBLIC, Modifier.STATIC).
-                returns(void.class).
-                addParameter(contextClassName, "context").
-                addStatement("$T intent = new $T(context, $L.class)", intentClassName, intentClassName, simpleName).
-                addStatement("context.startActivity(intent)").
-                build();
+        MethodSpec openMethod = createOpenMethod(activitySimpleName, false);
+        MethodSpec openForResultMethod = createOpenMethod(activitySimpleName, true);
 
         MethodSpec privateConstructor = MethodSpec.constructorBuilder().
                 addModifiers(Modifier.PRIVATE).build();
@@ -61,13 +51,32 @@ public class ActivityScreenAnnotatedClass {
                 addModifiers(Modifier.PUBLIC, Modifier.FINAL).
                 addMethod(privateConstructor).
                 addMethod(openMethod).
+                addMethod(openForResultMethod).
                 build();
 
         PackageElement pkg = elementUtils.getPackageOf(annotatedClassElement);
 
         String packageName = pkg.isUnnamed() ? "" : pkg.getQualifiedName().toString();
-        JavaFile javaFile = JavaFile.builder(packageName, screenClass).build();
+        JavaFile javaFile = JavaFile.builder(packageName, screenClass).indent("    ").build();
 
         javaFile.writeTo(filer);
+    }
+
+    private static MethodSpec createOpenMethod(Name activitySimpleName, boolean forResult) {
+        ClassName activityClassName = ClassName.get("android.app", "Activity");
+        ClassName intentClassName = ClassName.get("android.content", "Intent");
+
+        MethodSpec.Builder openMethodBuilder = MethodSpec.methodBuilder(forResult ? "openForResult" : "open").
+                addModifiers(Modifier.PUBLIC, Modifier.STATIC).
+                returns(void.class).
+                addParameter(activityClassName, "activity");
+        openMethodBuilder.addStatement("$T intent = new $T(activity, $L.class)", intentClassName, intentClassName, activitySimpleName);
+        if (forResult) {
+            openMethodBuilder.addParameter(TypeName.INT, "requestCode");
+            openMethodBuilder.addStatement("activity.startActivityForResult(intent, requestCode)");
+        } else {
+            openMethodBuilder.addStatement("activity.startActivity(intent)");
+        }
+        return openMethodBuilder.build();
     }
 }
