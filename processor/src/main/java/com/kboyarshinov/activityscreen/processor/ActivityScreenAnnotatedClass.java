@@ -1,6 +1,6 @@
 package com.kboyarshinov.activityscreen.processor;
 
-import com.kboyarshinov.activityscreens.annotation.Screen;
+import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 import com.squareup.javawriter.JavaWriter;
 
 import javax.annotation.processing.Filer;
@@ -18,13 +18,13 @@ import java.util.EnumSet;
  *
  * @author Kirill Boyarshinov
  */
-public class ScreenAnnotatedClass {
+public class ActivityScreenAnnotatedClass {
     private static final String SUFFIX = "Screen";
     private TypeElement annotatedClassElement;
 
-    public ScreenAnnotatedClass(TypeElement classElement) {
+    public ActivityScreenAnnotatedClass(TypeElement classElement) {
         this.annotatedClassElement = classElement;
-        Screen annotation = classElement.getAnnotation(Screen.class);
+        ActivityScreen annotation = classElement.getAnnotation(ActivityScreen.class);
     }
 
     /**

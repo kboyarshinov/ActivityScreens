@@ -1,7 +1,7 @@
 package com.kboyarshinov.activityscreen.processor;
 
 import com.google.auto.service.AutoService;
-import com.kboyarshinov.activityscreens.annotation.Screen;
+import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -9,8 +9,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -42,7 +40,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> annotations = new LinkedHashSet<String>();
-        annotations.add(Screen.class.getCanonicalName());
+        annotations.add(ActivityScreen.class.getCanonicalName());
         return annotations;
     }
 
@@ -54,7 +52,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
     /**
      * Checks if the annotated element observes our rules
      */
-    private boolean isValidClass(ScreenAnnotatedClass item) {
+    private boolean isValidClass(ActivityScreenAnnotatedClass item) {
 
         // Cast to TypeElement, has more type specific methods
         TypeElement classElement = item.getTypeElement();
@@ -67,14 +65,14 @@ public class ActivityScreenProcessor extends AbstractProcessor {
         // Check if it's an abstract class
         if (classElement.getModifiers().contains(Modifier.ABSTRACT)) {
             error(classElement, "The class %s is abstract. You can't annotate abstract classes with @%s.",
-                    classElement.getQualifiedName().toString(), Screen.class.getSimpleName());
+                    classElement.getQualifiedName().toString(), ActivityScreen.class.getSimpleName());
             return false;
         }
 
         // Check if it's an interface
         if (classElement.getKind().isInterface()) {
             error(classElement, "%s is interface. You can't annotate interfaces with @%s.",
-                    classElement.getQualifiedName().toString(), Screen.class.getSimpleName());
+                    classElement.getQualifiedName().toString(), ActivityScreen.class.getSimpleName());
             return false;
         }
 
@@ -82,7 +80,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
         TypeElement activityType = elementUtils.getTypeElement("android.app.Activity");
         if (activityType == null || !typeUtils.isSubtype(classElement.asType(), activityType.asType())) {
             error(classElement, "%s can only be used on activities, but %s is not a subclass of activity.",
-                    Screen.class.getSimpleName(), classElement.getQualifiedName());
+                    ActivityScreen.class.getSimpleName(), classElement.getQualifiedName());
             return false;
         }
         return true;
@@ -90,16 +88,16 @@ public class ActivityScreenProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(Screen.class)) {
+        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(ActivityScreen.class)) {
             // Check if a class has been annotated with @Factory
             if (annotatedElement.getKind() != ElementKind.CLASS) {
-                error(annotatedElement, "Only classes can be annotated with @%s", Screen.class.getSimpleName());
+                error(annotatedElement, "Only classes can be annotated with @%s", ActivityScreen.class.getSimpleName());
                 return true; // Exit processing
             }
             // We can cast it, because we know that it of ElementKind.CLASS
             TypeElement typeElement = (TypeElement) annotatedElement;
 
-            ScreenAnnotatedClass annotatedClass = new ScreenAnnotatedClass(typeElement);
+            ActivityScreenAnnotatedClass annotatedClass = new ActivityScreenAnnotatedClass(typeElement);
             if (!isValidClass(annotatedClass)) {
                 return true; // Error message printed, exit processing
             }
