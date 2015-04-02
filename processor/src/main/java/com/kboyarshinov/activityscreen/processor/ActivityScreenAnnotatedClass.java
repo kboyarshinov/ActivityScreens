@@ -1,6 +1,5 @@
 package com.kboyarshinov.activityscreen.processor;
 
-import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 import com.squareup.javapoet.*;
 
 import javax.annotation.processing.Filer;
@@ -10,6 +9,8 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Holds the information about a class annotated with @ActivityScreen
@@ -19,10 +20,14 @@ import java.io.IOException;
 public class ActivityScreenAnnotatedClass {
     private static final String SUFFIX = "Screen";
     private TypeElement annotatedClassElement;
+    private List<ActivityArgAnnotatedField> annotatedFields = new ArrayList<ActivityArgAnnotatedField>();
 
     public ActivityScreenAnnotatedClass(TypeElement classElement) {
         this.annotatedClassElement = classElement;
-        ActivityScreen annotation = classElement.getAnnotation(ActivityScreen.class);
+    }
+
+    public void addFieldClass(ActivityArgAnnotatedField field) {
+        annotatedFields.add(field);
     }
 
     /**

@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to indicate classes that are screens
+ * Annotation to indicate Activity classes that are screens
  *
  * @author Kirill Boyarshinov
  */
