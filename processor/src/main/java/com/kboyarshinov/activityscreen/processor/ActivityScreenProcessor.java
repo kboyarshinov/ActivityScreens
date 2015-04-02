@@ -102,10 +102,10 @@ public class ActivityScreenProcessor extends AbstractProcessor {
     }
 
     private boolean isValidField(Element annotatedElement) {
-        return annotatedElement.getModifiers().contains(Modifier.FINAL)
-                || annotatedElement.getModifiers().contains(Modifier.STATIC)
-                || annotatedElement.getModifiers().contains(Modifier.PRIVATE)
-                || annotatedElement.getModifiers().contains(Modifier.PROTECTED);
+        return !annotatedElement.getModifiers().contains(Modifier.FINAL)
+                || !annotatedElement.getModifiers().contains(Modifier.STATIC)
+                || !annotatedElement.getModifiers().contains(Modifier.PRIVATE)
+                || !annotatedElement.getModifiers().contains(Modifier.PROTECTED);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
             Name activityName = enclosingElement.getQualifiedName();
 
             if (!activityClasses.containsKey(activityName)) { // check if already processed
-                if (isAnnotatedActivity(enclosingElement)) {
+                if (!isAnnotatedActivity(enclosingElement)) {
                     error(annotatedElement, "@ActivityArg can only be used on fields in @ActivityScreen annotated activity (%s.%s)",
                             activityName, annotatedElement.getSimpleName());
                 }
@@ -163,6 +163,8 @@ public class ActivityScreenProcessor extends AbstractProcessor {
                 error(null, e.getMessage());
             }
         }
+        activityClasses.clear();
+        
         return false;
     }
 
