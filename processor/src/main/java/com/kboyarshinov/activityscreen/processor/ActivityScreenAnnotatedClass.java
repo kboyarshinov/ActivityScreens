@@ -9,8 +9,10 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Holds the information about a class annotated with @ActivityScreen
@@ -20,14 +22,30 @@ import java.util.List;
 public class ActivityScreenAnnotatedClass {
     private static final String SUFFIX = "Screen";
     private TypeElement annotatedClassElement;
-    private List<ActivityArgAnnotatedField> annotatedFields = new ArrayList<ActivityArgAnnotatedField>();
+
+    private Set<ActivityArgAnnotatedField> requiredFields = new TreeSet<ActivityArgAnnotatedField>();
+    private Set<ActivityArgAnnotatedField> optionalFields = new TreeSet<ActivityArgAnnotatedField>();
+    private Map<String, ActivityArgAnnotatedField> bundleKeyMap = new HashMap<String, ActivityArgAnnotatedField>();
 
     public ActivityScreenAnnotatedClass(TypeElement classElement) {
         this.annotatedClassElement = classElement;
     }
 
     public void addFieldClass(ActivityArgAnnotatedField field) {
-        annotatedFields.add(field);
+        bundleKeyMap.put(field.getKey(), field);
+        if (field.isRequired()) {
+            requiredFields.add(field);
+        } else {
+            optionalFields.add(field);
+        }
+    }
+
+    public Set<ActivityArgAnnotatedField> getRequiredFields() {
+        return requiredFields;
+    }
+
+    public Set<ActivityArgAnnotatedField> getOptionalFields() {
+        return optionalFields;
     }
 
     /**
