@@ -20,9 +20,10 @@
         <java.version>1.6</java.version>
 
         <!-- Test Dependencies -->
+        <android.version>4.1.1.4</android.version>
         <junit.version>4.10</junit.version>
         <compile-testing.version>0.5</compile-testing.version>
-        <truth.version>0.25</truth.version>
+        <truth.version>0.13</truth.version>
     </properties>
 
     <build>

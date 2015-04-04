@@ -47,9 +47,16 @@
         </dependency>
         <!-- Truth -->
         <dependency>
-            <groupId>com.google.truth</groupId>
+            <groupId>org.truth0</groupId>
             <artifactId>truth</artifactId>
             <version>${truth.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
+            <scope>test</scope>
+            <version>${android.version}</version>
         </dependency>
     </dependencies>
 

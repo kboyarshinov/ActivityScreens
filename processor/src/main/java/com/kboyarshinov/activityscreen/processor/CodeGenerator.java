@@ -111,7 +111,11 @@ public final class CodeGenerator {
                 addModifiers(Modifier.PUBLIC, Modifier.STATIC).
                 returns(void.class).
                 addParameter(activityClassName, "activity");
-        openMethodBuilder.addStatement("Intent intent = createIntent(activity, " + toParametersString(parameters) + ")");
+        if (parameters.isEmpty()) {
+            openMethodBuilder.addStatement("Intent intent = createIntent(activity)");
+        } else {
+            openMethodBuilder.addStatement("Intent intent = createIntent(activity, " + toParametersString(parameters) + ")");
+        }
         if (!parameters.isEmpty()) {
             for (ParameterSpec parameter : parameters) {
                 openMethodBuilder.addParameter(parameter);
