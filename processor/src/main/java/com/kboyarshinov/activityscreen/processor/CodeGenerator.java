@@ -19,7 +19,19 @@ public final class CodeGenerator {
     private final ClassName activityClassName = ClassName.get("android.app", "Activity");
     private final ClassName bundleClassName = ClassName.get("android.os", "Bundle");
 
-    private final Map<String, String> argumentTypes = new HashMap<String, String>(20) {{
+    private final Map<String, String> argumentTypes = new HashMap<String, String>(20);
+
+    private final Elements elementUtils;
+
+    private final Filer filer;
+
+    public CodeGenerator(Elements elementUtils, Filer filer) {
+        this.elementUtils = elementUtils;
+        this.filer = filer;
+        fillArguments();
+    }
+
+    private void fillArguments() {
         argumentTypes.put("java.lang.String", "String");
         argumentTypes.put("int", "Int");
         argumentTypes.put("java.lang.Integer", "Int");
@@ -40,15 +52,6 @@ public final class CodeGenerator {
         argumentTypes.put("java.lang.CharSequence", "CharSequence");
         argumentTypes.put("android.os.Bundle", "Bundle");
         argumentTypes.put("android.os.Parcelable", "Parcelable");
-    }};
-
-    private final Elements elementUtils;
-
-    private final Filer filer;
-
-    public CodeGenerator(Elements elementUtils, Filer filer) {
-        this.elementUtils = elementUtils;
-        this.filer = filer;
     }
 
     /**
@@ -87,8 +90,6 @@ public final class CodeGenerator {
             }
 
             TypeSpec screenClass = screenBuilder.build();
-
-
             PackageElement pkg = elementUtils.getPackageOf(annotatedClassElement);
 
             String packageName = pkg.isUnnamed() ? "" : pkg.getQualifiedName().toString();

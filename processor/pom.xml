@@ -12,7 +12,6 @@
     <artifactId>processor</artifactId>
 
     <dependencies>
-
         <!-- Auto service annotation processor -->
         <dependency>
             <groupId>com.google.auto.service</groupId>
@@ -28,36 +27,30 @@
             <version>1.0.0</version>
         </dependency>
 
-        <!-- Apache Commons StringUtils -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.0</version>
-        </dependency>
-
         <!-- Annotation project -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>annotation</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <!-- JUnit -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <version>${junit.version}</version>
         </dependency>
+        <!-- Google compile testing -->
         <dependency>
             <groupId>com.google.testing.compile</groupId>
             <artifactId>compile-testing</artifactId>
-            <scope>test</scope>
+            <version>${compile-testing.version}</version>
         </dependency>
+        <!-- Truth -->
         <dependency>
-            <groupId>org.truth0</groupId>
+            <groupId>com.google.truth</groupId>
             <artifactId>truth</artifactId>
-            <scope>test</scope>
+            <version>${truth.version}</version>
         </dependency>
     </dependencies>
-
 
 </project>
