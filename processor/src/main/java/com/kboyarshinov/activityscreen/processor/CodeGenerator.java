@@ -17,6 +17,9 @@ import java.util.Map;
  * @author Kirill Boyarshinov
  */
 public final class CodeGenerator {
+    private static final ClassName intentClassName = ClassName.get("android.content", "Intent");
+    private static final ClassName activityClassName = ClassName.get("android.app", "Activity");
+
     private static final Map<String, String> ARGUMENT_TYPES = new HashMap<String, String>(20);
 
     static {
@@ -43,6 +46,7 @@ public final class CodeGenerator {
     }
 
     private final Elements elementUtils;
+
     private final Filer filer;
 
     public CodeGenerator(Elements elementUtils, Filer filer) {
@@ -61,8 +65,9 @@ public final class CodeGenerator {
             Name activitySimpleName = annotatedClassElement.getSimpleName();
             String screenClassName = activitySimpleName + ActivityScreenAnnotatedClass.SUFFIX;
 
-            MethodSpec openMethod = createOpenMethod(activitySimpleName, false);
-            MethodSpec openForResultMethod = createOpenMethod(activitySimpleName, true);
+            MethodSpec openMethod = generateOpenMethod(false);
+            MethodSpec openForResultMethod = generateOpenMethod(true);
+            MethodSpec createIntentMethod = generateCreateIntentMethod(activitySimpleName);
 
             MethodSpec privateConstructor = MethodSpec.constructorBuilder().
                     addModifiers(Modifier.PRIVATE).build();
@@ -72,6 +77,7 @@ public final class CodeGenerator {
                     addMethod(privateConstructor).
                     addMethod(openMethod).
                     addMethod(openForResultMethod).
+                    addMethod(createIntentMethod).
                     build();
 
             PackageElement pkg = elementUtils.getPackageOf(annotatedClassElement);
@@ -83,15 +89,12 @@ public final class CodeGenerator {
         }
     }
 
-    private static MethodSpec createOpenMethod(Name activitySimpleName, boolean forResult) {
-        ClassName activityClassName = ClassName.get("android.app", "Activity");
-        ClassName intentClassName = ClassName.get("android.content", "Intent");
-
+    private static MethodSpec generateOpenMethod(boolean forResult) {
         MethodSpec.Builder openMethodBuilder = MethodSpec.methodBuilder(forResult ? "openForResult" : "open").
                 addModifiers(Modifier.PUBLIC, Modifier.STATIC).
                 returns(void.class).
                 addParameter(activityClassName, "activity");
-        openMethodBuilder.addStatement("$T intent = new $T(activity, $L.class)", intentClassName, intentClassName, activitySimpleName);
+        openMethodBuilder.addStatement("Intent intent = createIntent(activity)");
         if (forResult) {
             openMethodBuilder.addParameter(TypeName.INT, "requestCode");
             openMethodBuilder.addStatement("activity.startActivityForResult(intent, requestCode)");
@@ -99,5 +102,15 @@ public final class CodeGenerator {
             openMethodBuilder.addStatement("activity.startActivity(intent)");
         }
         return openMethodBuilder.build();
+    }
+
+    private static MethodSpec generateCreateIntentMethod(Name activitySimpleName) {
+        MethodSpec.Builder createIntentBuilder = MethodSpec.methodBuilder("createIntent").
+                addModifiers(Modifier.PUBLIC, Modifier.STATIC).
+                addParameter(activityClassName, "activity").
+                returns(intentClassName);
+        createIntentBuilder.addStatement("$T intent = new $T(activity, $L.class)", intentClassName, intentClassName, activitySimpleName);
+        createIntentBuilder.addStatement("return intent");
+        return createIntentBuilder.build();
     }
 }
