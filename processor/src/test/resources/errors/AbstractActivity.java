@@ -1,10 +1,9 @@
-package types;
+package errors;
 
-import android.os.Bundle;
 import android.app.Activity;
 
 import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 
 @ActivityScreen
-private class PrivateActivity extends Activity {
+public abstract class AbstractActivity extends Activity {
 }

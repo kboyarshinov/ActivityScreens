@@ -1,7 +1,7 @@
-package types;
+package errors;
 
 import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 
 @ActivityScreen
-public class NonActivity {
+public interface Interface {
 }
