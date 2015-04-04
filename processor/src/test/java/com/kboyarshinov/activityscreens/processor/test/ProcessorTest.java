@@ -14,8 +14,9 @@ import static org.truth0.Truth.ASSERT;
  */
 public class ProcessorTest {
 
-    private JavaFileObject emptyActivity = JavaFileObjects.forResource("errors/EmptyActivity.java");
-    private JavaFileObject emptyActivityScreen = JavaFileObjects.forResource("errors/EmptyActivityScreen.java");
+    private JavaFileObject emptyActivity = JavaFileObjects.forResource("types/EmptyActivity.java");
+    private JavaFileObject emptyActivityScreen = JavaFileObjects.forResource("types/EmptyActivityScreen.java");
+    
     private JavaFileObject nonActivity = JavaFileObjects.forResource("errors/NonActivity.java");
     private JavaFileObject privateActivity = JavaFileObjects.forResource("errors/PrivateActivity.java");
     private JavaFileObject abstractActivity = JavaFileObjects.forResource("errors/AbstractActivity.java");
