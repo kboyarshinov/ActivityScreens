@@ -124,6 +124,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
                 if (!isAnnotatedActivity(enclosingElement)) {
                     error(annotatedElement, "@ActivityArg can only be used on fields in @ActivityScreen annotated activity (%s.%s)",
                             activityName, annotatedElement.getSimpleName());
+                    return true;
                 }
                 if (!isValidActivityClass(enclosingElement)) {
                     return true;

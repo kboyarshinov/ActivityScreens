@@ -64,6 +64,10 @@ public class ActivityArgAnnotatedField implements Comparable<ActivityArgAnnotate
         return type.endsWith("[]");
     }
 
+    public boolean isPrimitive() {
+        return element.asType().getKind().isPrimitive();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

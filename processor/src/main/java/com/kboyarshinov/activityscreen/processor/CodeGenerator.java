@@ -9,9 +9,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Kirill Boyarshinov
@@ -19,6 +17,7 @@ import java.util.Map;
 public final class CodeGenerator {
     private static final ClassName intentClassName = ClassName.get("android.content", "Intent");
     private static final ClassName activityClassName = ClassName.get("android.app", "Activity");
+    private static final ClassName bundleClassName = ClassName.get("android.os", "Bundle");
 
     private static final Map<String, String> ARGUMENT_TYPES = new HashMap<String, String>(20);
 
@@ -65,9 +64,15 @@ public final class CodeGenerator {
             Name activitySimpleName = annotatedClassElement.getSimpleName();
             String screenClassName = activitySimpleName + ActivityScreenAnnotatedClass.SUFFIX;
 
-            MethodSpec openMethod = generateOpenMethod(false);
-            MethodSpec openForResultMethod = generateOpenMethod(true);
-            MethodSpec createIntentMethod = generateCreateIntentMethod(activitySimpleName);
+            List<ParameterSpec> parameters = new ArrayList<ParameterSpec>(annotatedClass.getRequiredFields().size());
+            Set<ActivityArgAnnotatedField> requiredFields = annotatedClass.getRequiredFields();
+            for (ActivityArgAnnotatedField requiredField : requiredFields) {
+                parameters.add(ParameterSpec.builder(parseType(requiredField), requiredField.getKey()).build());
+            }
+
+            MethodSpec openMethod = generateOpenMethod(false, parameters);
+            MethodSpec openForResultMethod = generateOpenMethod(true, parameters);
+            MethodSpec createIntentMethod = generateCreateIntentMethod(activitySimpleName, parameters);
 
             MethodSpec privateConstructor = MethodSpec.constructorBuilder().
                     addModifiers(Modifier.PRIVATE).build();
@@ -89,12 +94,24 @@ public final class CodeGenerator {
         }
     }
 
-    private static MethodSpec generateOpenMethod(boolean forResult) {
+    private TypeName parseType(ActivityArgAnnotatedField field) {
+        if (field.isPrimitive()) {
+            return TypeName.get(field.getElement().asType());
+        }
+        return null;
+    }
+
+    private static MethodSpec generateOpenMethod(boolean forResult, List<ParameterSpec> parameters) {
         MethodSpec.Builder openMethodBuilder = MethodSpec.methodBuilder(forResult ? "openForResult" : "open").
                 addModifiers(Modifier.PUBLIC, Modifier.STATIC).
                 returns(void.class).
                 addParameter(activityClassName, "activity");
-        openMethodBuilder.addStatement("Intent intent = createIntent(activity)");
+        openMethodBuilder.addStatement("Intent intent = createIntent(activity, " + toParametersString(parameters) + ")");
+        if (!parameters.isEmpty()) {
+            for (ParameterSpec parameter : parameters) {
+                openMethodBuilder.addParameter(parameter);
+            }
+        }
         if (forResult) {
             openMethodBuilder.addParameter(TypeName.INT, "requestCode");
             openMethodBuilder.addStatement("activity.startActivityForResult(intent, requestCode)");
@@ -104,12 +121,30 @@ public final class CodeGenerator {
         return openMethodBuilder.build();
     }
 
-    private static MethodSpec generateCreateIntentMethod(Name activitySimpleName) {
+    private static String toParametersString(List<ParameterSpec> parameters) {
+        StringBuilder builder = new StringBuilder();
+        boolean firstParameter = true;
+        for (Iterator<ParameterSpec> i = parameters.iterator(); i.hasNext();) {
+            ParameterSpec parameter = i.next();
+            if (!firstParameter) builder.append(", ");
+                builder.append(parameter.name);
+            firstParameter = false;
+        }
+        return builder.toString();
+    }
+
+    private static MethodSpec generateCreateIntentMethod(Name activitySimpleName, List<ParameterSpec> parameters) {
         MethodSpec.Builder createIntentBuilder = MethodSpec.methodBuilder("createIntent").
                 addModifiers(Modifier.PUBLIC, Modifier.STATIC).
                 addParameter(activityClassName, "activity").
                 returns(intentClassName);
         createIntentBuilder.addStatement("$T intent = new $T(activity, $L.class)", intentClassName, intentClassName, activitySimpleName);
+        if (!parameters.isEmpty()) {
+            for (ParameterSpec parameter : parameters) {
+                createIntentBuilder.addParameter(parameter);
+                createIntentBuilder.addStatement("intent.putExtra($S, $L)", parameter.name, parameter.name);
+            }
+        }
         createIntentBuilder.addStatement("return intent");
         return createIntentBuilder.build();
     }
