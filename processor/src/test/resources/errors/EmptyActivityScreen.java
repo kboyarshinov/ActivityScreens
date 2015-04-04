@@ -1,4 +1,4 @@
-package types;
+package errors;
 
 import android.app.Activity;
 import android.content.Intent;
