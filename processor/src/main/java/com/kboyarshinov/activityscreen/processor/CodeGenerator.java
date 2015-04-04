@@ -15,34 +15,32 @@ import java.util.*;
  * @author Kirill Boyarshinov
  */
 public final class CodeGenerator {
-    private static final ClassName intentClassName = ClassName.get("android.content", "Intent");
-    private static final ClassName activityClassName = ClassName.get("android.app", "Activity");
-    private static final ClassName bundleClassName = ClassName.get("android.os", "Bundle");
+    private final ClassName intentClassName = ClassName.get("android.content", "Intent");
+    private final ClassName activityClassName = ClassName.get("android.app", "Activity");
+    private final ClassName bundleClassName = ClassName.get("android.os", "Bundle");
 
-    private static final Map<String, String> ARGUMENT_TYPES = new HashMap<String, String>(20);
-
-    static {
-        ARGUMENT_TYPES.put("java.lang.String", "String");
-        ARGUMENT_TYPES.put("int", "Int");
-        ARGUMENT_TYPES.put("java.lang.Integer", "Int");
-        ARGUMENT_TYPES.put("long", "Long");
-        ARGUMENT_TYPES.put("java.lang.Long", "Long");
-        ARGUMENT_TYPES.put("double", "Double");
-        ARGUMENT_TYPES.put("java.lang.Double", "Double");
-        ARGUMENT_TYPES.put("short", "Short");
-        ARGUMENT_TYPES.put("java.lang.Short", "Short");
-        ARGUMENT_TYPES.put("float", "Float");
-        ARGUMENT_TYPES.put("java.lang.Float", "Float");
-        ARGUMENT_TYPES.put("byte", "Byte");
-        ARGUMENT_TYPES.put("java.lang.Byte", "Byte");
-        ARGUMENT_TYPES.put("boolean", "Boolean");
-        ARGUMENT_TYPES.put("java.lang.Boolean", "Boolean");
-        ARGUMENT_TYPES.put("char", "Char");
-        ARGUMENT_TYPES.put("java.lang.Character", "Char");
-        ARGUMENT_TYPES.put("java.lang.CharSequence", "CharSequence");
-        ARGUMENT_TYPES.put("android.os.Bundle", "Bundle");
-        ARGUMENT_TYPES.put("android.os.Parcelable", "Parcelable");
-    }
+    private final Map<String, String> argumentTypes = new HashMap<String, String>(20) {{
+        argumentTypes.put("java.lang.String", "String");
+        argumentTypes.put("int", "Int");
+        argumentTypes.put("java.lang.Integer", "Int");
+        argumentTypes.put("long", "Long");
+        argumentTypes.put("java.lang.Long", "Long");
+        argumentTypes.put("double", "Double");
+        argumentTypes.put("java.lang.Double", "Double");
+        argumentTypes.put("short", "Short");
+        argumentTypes.put("java.lang.Short", "Short");
+        argumentTypes.put("float", "Float");
+        argumentTypes.put("java.lang.Float", "Float");
+        argumentTypes.put("byte", "Byte");
+        argumentTypes.put("java.lang.Byte", "Byte");
+        argumentTypes.put("boolean", "Boolean");
+        argumentTypes.put("java.lang.Boolean", "Boolean");
+        argumentTypes.put("char", "Char");
+        argumentTypes.put("java.lang.Character", "Char");
+        argumentTypes.put("java.lang.CharSequence", "CharSequence");
+        argumentTypes.put("android.os.Bundle", "Bundle");
+        argumentTypes.put("android.os.Parcelable", "Parcelable");
+    }};
 
     private final Elements elementUtils;
 
@@ -73,17 +71,23 @@ public final class CodeGenerator {
             MethodSpec openMethod = generateOpenMethod(false, parameters);
             MethodSpec openForResultMethod = generateOpenMethod(true, parameters);
             MethodSpec createIntentMethod = generateCreateIntentMethod(activitySimpleName, parameters);
+            MethodSpec injectMethod = generateInjectMethod(annotatedClassElement, parameters);
 
             MethodSpec privateConstructor = MethodSpec.constructorBuilder().
                     addModifiers(Modifier.PRIVATE).build();
 
-            TypeSpec screenClass = TypeSpec.classBuilder(screenClassName).
+            TypeSpec.Builder screenBuilder = TypeSpec.classBuilder(screenClassName).
                     addModifiers(Modifier.PUBLIC, Modifier.FINAL).
                     addMethod(privateConstructor).
                     addMethod(openMethod).
                     addMethod(openForResultMethod).
-                    addMethod(createIntentMethod).
-                    build();
+                    addMethod(createIntentMethod);
+            if (!parameters.isEmpty()) {
+                screenBuilder.addMethod(injectMethod);
+            }
+
+            TypeSpec screenClass = screenBuilder.build();
+
 
             PackageElement pkg = elementUtils.getPackageOf(annotatedClassElement);
 
@@ -101,7 +105,7 @@ public final class CodeGenerator {
         return null;
     }
 
-    private static MethodSpec generateOpenMethod(boolean forResult, List<ParameterSpec> parameters) {
+    private MethodSpec generateOpenMethod(boolean forResult, List<ParameterSpec> parameters) {
         MethodSpec.Builder openMethodBuilder = MethodSpec.methodBuilder(forResult ? "openForResult" : "open").
                 addModifiers(Modifier.PUBLIC, Modifier.STATIC).
                 returns(void.class).
@@ -121,7 +125,7 @@ public final class CodeGenerator {
         return openMethodBuilder.build();
     }
 
-    private static String toParametersString(List<ParameterSpec> parameters) {
+    private String toParametersString(List<ParameterSpec> parameters) {
         StringBuilder builder = new StringBuilder();
         boolean firstParameter = true;
         for (Iterator<ParameterSpec> i = parameters.iterator(); i.hasNext();) {
@@ -133,7 +137,7 @@ public final class CodeGenerator {
         return builder.toString();
     }
 
-    private static MethodSpec generateCreateIntentMethod(Name activitySimpleName, List<ParameterSpec> parameters) {
+    private MethodSpec generateCreateIntentMethod(Name activitySimpleName, List<ParameterSpec> parameters) {
         MethodSpec.Builder createIntentBuilder = MethodSpec.methodBuilder("createIntent").
                 addModifiers(Modifier.PUBLIC, Modifier.STATIC).
                 addParameter(activityClassName, "activity").
@@ -147,5 +151,21 @@ public final class CodeGenerator {
         }
         createIntentBuilder.addStatement("return intent");
         return createIntentBuilder.build();
+    }
+
+    private MethodSpec generateInjectMethod(TypeElement annotatedClassElement, List<ParameterSpec> parameters) {
+        MethodSpec.Builder injectBuilder = MethodSpec.methodBuilder("inject").
+                addModifiers(Modifier.PUBLIC, Modifier.STATIC).
+                addParameter(TypeName.get(annotatedClassElement.asType()), "activity").
+                returns(void.class);
+        injectBuilder.addStatement("$T bundle = activity.getIntent().getExtras()", bundleClassName);
+        for (ParameterSpec parameter : parameters) {
+            injectBuilder.addStatement("activity.$L = bundle.get$L($S)", parameter.name, getArgumentTypeString(parameter), parameter.name);
+        }
+        return injectBuilder.build();
+    }
+
+    private String getArgumentTypeString(ParameterSpec parameterSpec) {
+        return argumentTypes.get(parameterSpec.type.toString());
     }
 }
