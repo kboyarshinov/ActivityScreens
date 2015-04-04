@@ -14,8 +14,9 @@ import static org.truth0.Truth.ASSERT;
  */
 public class ProcessorTest {
 
-    private JavaFileObject emptyActivity = JavaFileObjects.forResource("errors/EmptyActivity.java");
-    private JavaFileObject emptyActivityScreen = JavaFileObjects.forResource("errors/EmptyActivityScreen.java");
+    private JavaFileObject emptyActivity = JavaFileObjects.forResource("types/EmptyActivity.java");
+    private JavaFileObject emptyActivityScreen = JavaFileObjects.forResource("types/EmptyActivityScreen.java");
+
     private JavaFileObject nonActivity = JavaFileObjects.forResource("errors/NonActivity.java");
     private JavaFileObject privateActivity = JavaFileObjects.forResource("errors/PrivateActivity.java");
     private JavaFileObject abstractActivity = JavaFileObjects.forResource("errors/AbstractActivity.java");
@@ -48,17 +49,17 @@ public class ProcessorTest {
     @Test
     public void privateActivity() {
         ASSERT.about(javaSource()).
-                that(privateActivity).
-                processedWith(new ActivityScreenProcessor()).
-                failsToCompile();
+            that(privateActivity).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
     }
 
     @Test
     public void abstractActivity() {
         ASSERT.about(javaSource()).
-                that(abstractActivity).
-                processedWith(new ActivityScreenProcessor()).
-                failsToCompile();
+            that(abstractActivity).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
     }
 
     @Test
@@ -72,36 +73,36 @@ public class ProcessorTest {
     @Test
     public void ArgFieldInNonActivity() {
         ASSERT.about(javaSource()).
-                that(argFieldInNonActivity).
-                processedWith(new ActivityScreenProcessor()).
-                failsToCompile();
+            that(argFieldInNonActivity).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
     }
 
     @Test
     public void validFieldsCheck() {
         ASSERT.about(javaSource()).
-                that(finalFieldActivity).
-                processedWith(new ActivityScreenProcessor()).
-                failsToCompile();
+            that(finalFieldActivity).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
 
         ASSERT.about(javaSource()).
-                that(privateFieldActivity).
-                processedWith(new ActivityScreenProcessor()).
-                failsToCompile();
+            that(privateFieldActivity).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
 
         ASSERT.about(javaSource()).
-                that(staticFieldActivity).
-                processedWith(new ActivityScreenProcessor()).
-                failsToCompile();
+            that(staticFieldActivity).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
 
         ASSERT.about(javaSource()).
-                that(protectedFieldActivity).
-                processedWith(new ActivityScreenProcessor()).
-                failsToCompile();
+            that(protectedFieldActivity).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
 
         ASSERT.about(javaSource()).
-                that(privateStaticFinalFieldActivity).
-                processedWith(new ActivityScreenProcessor()).
-                failsToCompile();
+            that(privateStaticFinalFieldActivity).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
     }
 }

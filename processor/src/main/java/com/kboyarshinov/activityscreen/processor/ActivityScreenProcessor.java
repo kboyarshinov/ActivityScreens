@@ -58,6 +58,13 @@ public class ActivityScreenProcessor extends AbstractProcessor {
      */
     private boolean isValidActivityClass(TypeElement classElement) {
 
+        // Check Activity inheritance
+        if (!isInheritsActivity(classElement)) {
+            error(classElement, "%s can only be used on activities, but %s is not a subclass of activity.",
+                    ActivityScreen.class.getSimpleName(), classElement.getQualifiedName());
+            return false;
+        }
+        
         // Check if it's public
         if (!classElement.getModifiers().contains(Modifier.PUBLIC)) {
             error(classElement, "The class %s is not public.", classElement.getQualifiedName().toString());
@@ -78,12 +85,6 @@ public class ActivityScreenProcessor extends AbstractProcessor {
             return false;
         }
 
-        // Check Activity inheritance
-        if (!isInheritsActivity(classElement)) {
-            error(classElement, "%s can only be used on activities, but %s is not a subclass of activity.",
-                    ActivityScreen.class.getSimpleName(), classElement.getQualifiedName());
-            return false;
-        }
         return true;
     }
 
