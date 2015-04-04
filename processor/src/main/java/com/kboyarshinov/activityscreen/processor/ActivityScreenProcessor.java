@@ -11,7 +11,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -27,6 +26,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
     private Elements elementUtils;
     private Filer filer;
     private Messager messager;
+    private CodeGenerator codeGenerator;
 
     private HashMap<Name, ActivityScreenAnnotatedClass> activityClasses = new HashMap<Name, ActivityScreenAnnotatedClass>();
 
@@ -37,6 +37,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
         elementUtils = processingEnv.getElementUtils();
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
+        codeGenerator = new CodeGenerator(elementUtils, filer);
     }
 
     @Override
@@ -123,6 +124,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
                 if (!isAnnotatedActivity(enclosingElement)) {
                     error(annotatedElement, "@ActivityArg can only be used on fields in @ActivityScreen annotated activity (%s.%s)",
                             activityName, annotatedElement.getSimpleName());
+                    return true;
                 }
                 if (!isValidActivityClass(enclosingElement)) {
                     return true;
@@ -156,15 +158,13 @@ public class ActivityScreenProcessor extends AbstractProcessor {
             }
         }
 
-        for (ActivityScreenAnnotatedClass activityScreenAnnotatedClass : activityClasses.values()) {
-            try {
-                activityScreenAnnotatedClass.generateCode(elementUtils, filer);
-            } catch (IOException e) {
-                error(null, e.getMessage());
-            }
+        try {
+            codeGenerator.generate(activityClasses.values());
+        } catch (IOException e) {
+            error(null, e.getMessage());
         }
+
         activityClasses.clear();
-        
         return false;
     }
 
@@ -179,5 +179,18 @@ public class ActivityScreenProcessor extends AbstractProcessor {
      */
     public void error(Element e, String msg, Object... args) {
         messager.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), e);
+    }
+
+    /**
+     * Prints warning message
+     *
+     * @param e The element which has caused the error. Can be null
+     * @param msg The error message
+     * @param args if the error message contains %s, %d etc. placeholders this arguments will be used
+     * to
+     * replace them
+     */
+    public void warn(Element e, String msg, Object... args) {
+        messager.printMessage(Diagnostic.Kind.WARNING, String.format(msg, args), e);
     }
 }

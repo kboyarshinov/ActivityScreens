@@ -11,6 +11,8 @@ public class MainActivity extends ActionBarActivity {
 
     @ActivityArg
     int field;
+    @ActivityArg
+    float field2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

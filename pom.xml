@@ -18,39 +18,13 @@
 
         <!-- Compilation -->
         <java.version>1.6</java.version>
-        <android.version>4.1.1.4</android.version>
 
         <!-- Test Dependencies -->
+        <android.version>4.1.1.4</android.version>
         <junit.version>4.10</junit.version>
         <compile-testing.version>0.5</compile-testing.version>
         <truth.version>0.13</truth.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.google.android</groupId>
-                <artifactId>android</artifactId>
-                <version>${android.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.testing.compile</groupId>
-                <artifactId>compile-testing</artifactId>
-                <version>${compile-testing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.truth0</groupId>
-                <artifactId>truth</artifactId>
-                <version>${truth.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <pluginManagement>
