@@ -16,6 +16,10 @@ public class ProcessorTest {
 
     private JavaFileObject emptyActivity = JavaFileObjects.forResource("types/EmptyActivity.java");
     private JavaFileObject emptyActivityScreen = JavaFileObjects.forResource("types/EmptyActivityScreen.java");
+    private JavaFileObject nonActivity = JavaFileObjects.forResource("types/NonActivity.java");
+    private JavaFileObject privateActivity = JavaFileObjects.forResource("types/PrivateActivity.java");
+    private JavaFileObject abstractActivity = JavaFileObjects.forResource("types/AbstractActivity.java");
+    private JavaFileObject interfaceClass = JavaFileObjects.forResource("types/Interface.java");
 
     @Test
     public void emptyActivity() {
@@ -25,5 +29,37 @@ public class ProcessorTest {
             compilesWithoutError().
             and().
             generatesSources(emptyActivityScreen);
+    }
+
+    @Test
+    public void nonActivity() {
+        ASSERT.about(javaSource()).
+            that(nonActivity).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
+    }
+
+    @Test
+    public void privateActivity() {
+        ASSERT.about(javaSource()).
+                that(privateActivity).
+                processedWith(new ActivityScreenProcessor()).
+                failsToCompile();
+    }
+
+    @Test
+    public void abstractActivity() {
+        ASSERT.about(javaSource()).
+                that(abstractActivity).
+                processedWith(new ActivityScreenProcessor()).
+                failsToCompile();
+    }
+
+    @Test
+    public void interfaceClass() {
+        ASSERT.about(javaSource()).
+                that(interfaceClass).
+                processedWith(new ActivityScreenProcessor()).
+                failsToCompile();
     }
 }
