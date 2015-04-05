@@ -28,6 +28,9 @@ public class ProcessorTest {
     private JavaFileObject protectedFieldActivity = JavaFileObjects.forResource("errors/ProtectedFieldActivity.java");
     private JavaFileObject privateStaticFinalFieldActivity = JavaFileObjects.forResource("errors/PrivateStaticFinalFieldActivity.java");
 
+    private JavaFileObject primitiveTypesActivity = JavaFileObjects.forResource("types/PrimitiveTypesActivity.java");
+    private JavaFileObject primitiveTypesActivityScreen = JavaFileObjects.forResource("types/PrimitiveTypesActivityScreen.java");
+
     @Test
     public void emptyActivity() {
         ASSERT.about(javaSource()).
@@ -36,6 +39,16 @@ public class ProcessorTest {
             compilesWithoutError().
             and().
             generatesSources(emptyActivityScreen);
+    }
+
+    @Test
+    public void primitiveTypes() {
+        ASSERT.about(javaSource()).
+            that(primitiveTypesActivity).
+            processedWith(new ActivityScreenProcessor()).
+            compilesWithoutError().
+            and().
+            generatesSources(primitiveTypesActivityScreen);
     }
 
     @Test
@@ -65,9 +78,9 @@ public class ProcessorTest {
     @Test
     public void interfaceClass() {
         ASSERT.about(javaSource()).
-                that(interfaceClass).
-                processedWith(new ActivityScreenProcessor()).
-                failsToCompile();
+            that(interfaceClass).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
     }
 
     @Test
