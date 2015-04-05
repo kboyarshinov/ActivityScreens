@@ -9,10 +9,27 @@ import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 @ActivityScreen
 public class MainActivity extends ActionBarActivity {
 
+//    @ActivityArg
+//    int field;
+//    @ActivityArg(required = false)
+//    float field2;
+
     @ActivityArg
-    int field;
+    int fieldInt;
     @ActivityArg
-    float field2;
+    float fieldFloat;
+    @ActivityArg(required = false)
+    double fieldDouble;
+    @ActivityArg
+    byte fieldByte;
+    @ActivityArg(required = false)
+    boolean fieldBoolean;
+    @ActivityArg
+    char fieldChar;
+    @ActivityArg(required = false)
+    short fieldShort;
+    @ActivityArg
+    long fieldLong;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

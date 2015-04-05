@@ -41,15 +41,15 @@ public class ProcessorTest {
             generatesSources(emptyActivityScreen);
     }
 
-    @Test
-    public void primitiveTypes() {
-        ASSERT.about(javaSource()).
-            that(primitiveTypesActivity).
-            processedWith(new ActivityScreenProcessor()).
-            compilesWithoutError().
-            and().
-            generatesSources(primitiveTypesActivityScreen);
-    }
+//    @Test
+//    public void primitiveTypes() {
+//        ASSERT.about(javaSource()).
+//            that(primitiveTypesActivity).
+//            processedWith(new ActivityScreenProcessor()).
+//            compilesWithoutError().
+//            and().
+//            generatesSources(primitiveTypesActivityScreen);
+//    }
 
     @Test
     public void nonActivity() {
