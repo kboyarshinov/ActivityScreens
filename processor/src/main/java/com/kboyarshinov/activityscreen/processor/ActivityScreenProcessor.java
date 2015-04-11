@@ -151,6 +151,8 @@ public class ActivityScreenProcessor extends AbstractProcessor {
             codeGenerator.generate(activityClasses.values());
         } catch (IOException e) {
             error(null, e.getMessage());
+        } catch (UnsupportedTypeException e) {
+            error(e.getElement(), e.getMessage());
         }
 
         activityClasses.clear();

@@ -146,7 +146,7 @@ public final class CodeGenerator {
         if (field.isPrimitive()) {
             return TypeName.get(field.getElement().asType());
         }
-        return null;
+        throw new UnsupportedTypeException(field.getElement());
     }
 
     private MethodSpec generateOpenMethod(boolean forResult) {
