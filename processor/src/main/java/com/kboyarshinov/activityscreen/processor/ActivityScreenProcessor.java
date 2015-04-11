@@ -135,7 +135,17 @@ public class ActivityScreenProcessor extends AbstractProcessor {
                 }
 
                 ActivityScreenAnnotatedClass activityScreenAnnotatedClass = activityClasses.get(activityName);
-                activityScreenAnnotatedClass.addFieldClass(new ActivityArgAnnotatedField(enclosedElement));
+                ActivityArgAnnotatedField annotatedField = new ActivityArgAnnotatedField(enclosedElement);
+                if (activityScreenAnnotatedClass.containsBundleKey(annotatedField)) {
+                    //  key for bundle is already in use
+                    ActivityArgAnnotatedField otherField = activityScreenAnnotatedClass.getFieldByKey(annotatedField.getKey());
+                    error(annotatedField.getElement(),
+                            "The bundle key '%s' for field %s in %s is already used by another field %s)",
+                            annotatedField.getKey(), annotatedField.getVariableName(),
+                            activityName, otherField.getVariableName());
+                    return true;
+                }
+                activityScreenAnnotatedClass.addFieldClass(annotatedField);
             }
         }
 
