@@ -7,6 +7,7 @@ import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -119,14 +120,10 @@ public class ActivityScreenProcessor extends AbstractProcessor {
             }
 
             // process fields with @ActivityArg annotation
-            List<? extends Element> enclosedElements = elementUtils.getAllMembers(typeElement);
+            List<? extends Element> enclosedElements = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
             for (Element enclosedElement : enclosedElements) {
                 ActivityArg activityArg = enclosedElement.getAnnotation(ActivityArg.class);
                 if (activityArg == null) {
-                    continue;
-                }
-                if (enclosedElement.getKind() != ElementKind.FIELD) {
-                    error(enclosedElement, "Only field can be annotated with @%s", ActivityArg.class.getSimpleName());
                     continue;
                 }
                 if (!isValidField(enclosedElement)) {
