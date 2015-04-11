@@ -5,10 +5,7 @@ import com.squareup.javapoet.*;
 import org.apache.commons.lang3.text.WordUtils;
 
 import javax.annotation.processing.Filer;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
 import java.io.IOException;
 import java.util.*;
@@ -58,10 +55,10 @@ public final class CodeGenerator {
         argumentTypes.put("java.lang.Boolean", "Boolean");
         argumentTypes.put("char", "Char");
         argumentTypes.put("char[]", "CharArray");
-        argumentTypes.put("java.lang.Character", "Char");
-        argumentTypes.put("java.lang.CharSequence", "CharSequence");
-        argumentTypes.put("android.os.Bundle", "Bundle");
-        argumentTypes.put("android.os.Parcelable", "Parcelable");
+//        argumentTypes.put("java.lang.Character", "Char");
+//        argumentTypes.put("java.lang.CharSequence", "CharSequence");
+//        argumentTypes.put("android.os.Bundle", "Bundle");
+//        argumentTypes.put("android.os.Parcelable", "Parcelable");
     }
 
     /**
@@ -69,7 +66,7 @@ public final class CodeGenerator {
      *
      * @throws java.io.IOException
      */
-    public void generate(Collection<ActivityScreenAnnotatedClass> annotatedClasses) throws IOException {
+    public void generate(Collection<ActivityScreenAnnotatedClass> annotatedClasses) throws IOException, UnsupportedTypeException {
         for (ActivityScreenAnnotatedClass annotatedClass : annotatedClasses) {
             TypeElement annotatedClassElement = annotatedClass.getTypeElement();
             TypeName activityTypeName = TypeName.get(annotatedClassElement.asType());
@@ -150,17 +147,18 @@ public final class CodeGenerator {
         }
     }
 
-    private TypeName parseType(ActivityArgAnnotatedField field) {
+    private TypeName parseType(ActivityArgAnnotatedField field) throws UnsupportedTypeException {
         String type = field.getType();
+        Element element = field.getElement();
         if (!argumentTypes.containsKey(type))
-            throw new UnsupportedTypeException(field.getElement());
+            throw new UnsupportedTypeException(element);
         if (field.isPrimitive()) {
-            return TypeName.get(field.getElement().asType());
+            return TypeName.get(element.asType());
         }
         if (field.isArray()) {
-            return ArrayTypeName.get(field.getElement().asType());
+            return ArrayTypeName.get(element.asType());
         }
-        throw new UnsupportedTypeException(field.getElement());
+        throw new UnsupportedTypeException(element);
     }
 
     private MethodSpec generateOpenMethod(boolean forResult) {
