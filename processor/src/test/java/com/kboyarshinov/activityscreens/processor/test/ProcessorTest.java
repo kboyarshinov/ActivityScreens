@@ -21,7 +21,6 @@ public class ProcessorTest {
     private JavaFileObject privateActivity = JavaFileObjects.forResource("errors/PrivateActivity.java");
     private JavaFileObject abstractActivity = JavaFileObjects.forResource("errors/AbstractActivity.java");
     private JavaFileObject interfaceClass = JavaFileObjects.forResource("errors/Interface.java");
-    private JavaFileObject argFieldInNonActivity = JavaFileObjects.forResource("errors/ArgFieldInNonActivity.java");
     private JavaFileObject finalFieldActivity = JavaFileObjects.forResource("errors/FinalFieldActivity.java");
     private JavaFileObject staticFieldActivity = JavaFileObjects.forResource("errors/StaticFieldActivity.java");
     private JavaFileObject privateFieldActivity = JavaFileObjects.forResource("errors/PrivateFieldActivity.java");
@@ -79,14 +78,6 @@ public class ProcessorTest {
     public void interfaceClass() {
         ASSERT.about(javaSource()).
             that(interfaceClass).
-            processedWith(new ActivityScreenProcessor()).
-            failsToCompile();
-    }
-
-    @Test
-    public void ArgFieldInNonActivity() {
-        ASSERT.about(javaSource()).
-            that(argFieldInNonActivity).
             processedWith(new ActivityScreenProcessor()).
             failsToCompile();
     }

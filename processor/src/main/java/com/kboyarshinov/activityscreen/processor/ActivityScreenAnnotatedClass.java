@@ -17,14 +17,12 @@ public class ActivityScreenAnnotatedClass {
 
     private Set<ActivityArgAnnotatedField> requiredFields = new TreeSet<ActivityArgAnnotatedField>();
     private Set<ActivityArgAnnotatedField> optionalFields = new TreeSet<ActivityArgAnnotatedField>();
-    private Map<String, ActivityArgAnnotatedField> bundleKeyMap = new HashMap<String, ActivityArgAnnotatedField>();
 
     public ActivityScreenAnnotatedClass(TypeElement classElement) {
         this.annotatedClassElement = classElement;
     }
 
     public void addFieldClass(ActivityArgAnnotatedField field) {
-        bundleKeyMap.put(field.getKey(), field);
         if (field.isRequired()) {
             requiredFields.add(field);
         } else {
