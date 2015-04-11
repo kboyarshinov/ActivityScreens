@@ -45,6 +45,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> annotations = new LinkedHashSet<String>();
         annotations.add(ActivityScreen.class.getCanonicalName());
+        annotations.add(ActivityArg.class.getCanonicalName());
         return annotations;
     }
 
