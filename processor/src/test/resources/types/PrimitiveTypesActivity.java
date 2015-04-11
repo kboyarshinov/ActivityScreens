@@ -7,19 +7,19 @@ import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 @ActivityScreen
 public class PrimitiveTypesActivity extends Activity {
     @ActivityArg
-    int fieldInt;
+    int field1;
     @ActivityArg
-    float fieldFloat;
+    float field2;
     @ActivityArg
-    double fieldDouble;
+    double field3;
     @ActivityArg
-    byte fieldByte;
+    byte field4;
     @ActivityArg
-    boolean fieldBoolean;
+    boolean field5;
     @ActivityArg
-    char fieldChar;
+    char field6;
     @ActivityArg
-    short fieldShort;
+    short field7;
     @ActivityArg
-    long fieldLong;
+    long field8;
 }
