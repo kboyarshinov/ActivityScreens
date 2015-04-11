@@ -30,6 +30,8 @@ public class ProcessorTest {
 
     private JavaFileObject primitiveTypesActivity = JavaFileObjects.forResource("types/PrimitiveTypesActivity.java");
     private JavaFileObject primitiveTypesActivityScreen = JavaFileObjects.forResource("types/PrimitiveTypesActivityScreen.java");
+    private JavaFileObject primitiveArraysActivity = JavaFileObjects.forResource("types/PrimitiveArraysActivity.java");
+    private JavaFileObject primitiveArraysActivityScreen = JavaFileObjects.forResource("types/PrimitiveArraysActivityScreen.java");
 
     @Test
     public void emptyActivity() {
@@ -49,6 +51,16 @@ public class ProcessorTest {
             compilesWithoutError().
             and().
             generatesSources(primitiveTypesActivityScreen);
+    }
+
+    @Test
+    public void primitiveArrays() {
+        ASSERT.about(javaSource()).
+                that(primitiveArraysActivity).
+                processedWith(new ActivityScreenProcessor()).
+                compilesWithoutError().
+                and().
+                generatesSources(primitiveArraysActivityScreen);
     }
 
     @Test

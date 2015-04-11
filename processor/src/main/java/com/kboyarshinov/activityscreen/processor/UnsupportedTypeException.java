@@ -6,7 +6,6 @@ import javax.lang.model.element.Element;
  * @author Kirill Boyarshinov
  */
 public class UnsupportedTypeException extends RuntimeException {
-
     private final Element element;
 
     public UnsupportedTypeException(Element element) {

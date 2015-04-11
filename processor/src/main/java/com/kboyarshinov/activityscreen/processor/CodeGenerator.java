@@ -36,20 +36,28 @@ public final class CodeGenerator {
     private void fillArguments() {
         argumentTypes.put("java.lang.String", "String");
         argumentTypes.put("int", "Int");
+        argumentTypes.put("int[]", "IntArray");
         argumentTypes.put("java.lang.Integer", "Int");
         argumentTypes.put("long", "Long");
+        argumentTypes.put("long[]", "LongArray");
         argumentTypes.put("java.lang.Long", "Long");
         argumentTypes.put("double", "Double");
+        argumentTypes.put("double[]", "DoubleArray");
         argumentTypes.put("java.lang.Double", "Double");
         argumentTypes.put("short", "Short");
+        argumentTypes.put("short[]", "ShortArray");
         argumentTypes.put("java.lang.Short", "Short");
         argumentTypes.put("float", "Float");
+        argumentTypes.put("float[]", "FloatArray");
         argumentTypes.put("java.lang.Float", "Float");
         argumentTypes.put("byte", "Byte");
+        argumentTypes.put("byte[]", "ByteArray");
         argumentTypes.put("java.lang.Byte", "Byte");
         argumentTypes.put("boolean", "Boolean");
+        argumentTypes.put("boolean[]", "BooleanArray");
         argumentTypes.put("java.lang.Boolean", "Boolean");
         argumentTypes.put("char", "Char");
+        argumentTypes.put("char[]", "CharArray");
         argumentTypes.put("java.lang.Character", "Char");
         argumentTypes.put("java.lang.CharSequence", "CharSequence");
         argumentTypes.put("android.os.Bundle", "Bundle");
@@ -143,8 +151,14 @@ public final class CodeGenerator {
     }
 
     private TypeName parseType(ActivityArgAnnotatedField field) {
+        String type = field.getType();
+        if (!argumentTypes.containsKey(type))
+            throw new UnsupportedTypeException(field.getElement());
         if (field.isPrimitive()) {
             return TypeName.get(field.getElement().asType());
+        }
+        if (field.isArray()) {
+            return ArrayTypeName.get(field.getElement().asType());
         }
         throw new UnsupportedTypeException(field.getElement());
     }
