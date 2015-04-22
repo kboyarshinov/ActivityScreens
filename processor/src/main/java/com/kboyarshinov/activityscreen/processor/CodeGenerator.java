@@ -47,6 +47,18 @@ public final class CodeGenerator {
         argumentTypes.put("boolean[]", "BooleanArray");
         argumentTypes.put("char", "Char");
         argumentTypes.put("char[]", "CharArray");
+        argumentTypes.put("java.lang.Character", "Char");
+        argumentTypes.put("java.lang.Integer", "Int");
+        argumentTypes.put("java.lang.Long", "Long");
+        argumentTypes.put("java.lang.Double", "Double");
+        argumentTypes.put("java.lang.Short", "Short");
+        argumentTypes.put("java.lang.Float", "Float");
+        argumentTypes.put("java.lang.Byte", "Byte");
+        argumentTypes.put("java.lang.Boolean", "Boolean");
+        argumentTypes.put("java.lang.String", "String");
+        argumentTypes.put("java.lang.CharSequence", "CharSequence");
+        argumentTypes.put("java.lang.CharSequence[]", "CharSequenceArray");
+        argumentTypes.put("android.os.Bundle", "Bundle");
     }
 
     /**

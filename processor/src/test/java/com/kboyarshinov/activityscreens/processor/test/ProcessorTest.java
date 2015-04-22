@@ -32,6 +32,10 @@ public class ProcessorTest {
     private JavaFileObject primitiveTypesActivityScreen = JavaFileObjects.forResource("types/PrimitiveTypesActivityScreen.java");
     private JavaFileObject primitiveArraysActivity = JavaFileObjects.forResource("types/PrimitiveArraysActivity.java");
     private JavaFileObject primitiveArraysActivityScreen = JavaFileObjects.forResource("types/PrimitiveArraysActivityScreen.java");
+    private JavaFileObject primitiveWrappersActivity = JavaFileObjects.forResource("types/PrimitiveWrappersActivity.java");
+    private JavaFileObject primitiveWrappersActivityScreen = JavaFileObjects.forResource("types/PrimitiveWrappersActivityScreen.java");
+    private JavaFileObject classesActivity = JavaFileObjects.forResource("types/ClassesActivity.java");
+    private JavaFileObject classesActivityScreen = JavaFileObjects.forResource("types/ClassesActivityScreen.java");
 
     @Test
     public void emptyActivity() {
@@ -61,6 +65,26 @@ public class ProcessorTest {
                 compilesWithoutError().
                 and().
                 generatesSources(primitiveArraysActivityScreen);
+    }
+
+    @Test
+    public void primitiveWrappers() {
+        ASSERT.about(javaSource()).
+                that(primitiveWrappersActivity).
+                processedWith(new ActivityScreenProcessor()).
+                compilesWithoutError().
+                and().
+                generatesSources(primitiveWrappersActivityScreen);
+    }
+
+    @Test
+    public void classes() {
+        ASSERT.about(javaSource()).
+                that(classesActivity).
+                processedWith(new ActivityScreenProcessor()).
+                compilesWithoutError().
+                and().
+                generatesSources(classesActivityScreen);
     }
 
     @Test
