@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import java.lang.CharSequence;
+import java.lang.NullPointerException;
 import java.lang.String;
 
 public final class ClassesActivityScreen {
@@ -40,6 +41,9 @@ public final class ClassesActivityScreen {
 
     public static void inject(ClassesActivity activity) {
         Bundle bundle = activity.getIntent().getExtras();
+        if (bundle == null) {
+            throw new NullPointerException("ClassesActivity has empty Bundle. Use open() or openForResult() to launch activity.");
+        }
         activity.field1 = bundle.getString("field1");
         activity.field2 = bundle.getCharSequence("field2");
         activity.field3 = bundle.getCharSequenceArray("field3");

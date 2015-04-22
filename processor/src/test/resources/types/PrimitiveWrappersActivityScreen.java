@@ -10,6 +10,7 @@ import java.lang.Double;
 import java.lang.Float;
 import java.lang.Integer;
 import java.lang.Long;
+import java.lang.NullPointerException;
 import java.lang.Short;
 
 public final class PrimitiveWrappersActivityScreen {
@@ -59,6 +60,9 @@ public final class PrimitiveWrappersActivityScreen {
 
     public static void inject(PrimitiveWrappersActivity activity) {
         Bundle bundle = activity.getIntent().getExtras();
+        if (bundle == null) {
+            throw new NullPointerException("PrimitiveWrappersActivity has empty Bundle. Use open() or openForResult() to launch activity.");
+        }
         activity.field1 = bundle.getChar("field1");
         activity.field2 = bundle.getInt("field2");
         activity.field3 = bundle.getDouble("field3");

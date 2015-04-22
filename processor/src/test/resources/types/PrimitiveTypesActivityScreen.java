@@ -3,6 +3,7 @@ package types;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import java.lang.NullPointerException;
 
 public final class PrimitiveTypesActivityScreen {
     public final int field1;
@@ -50,6 +51,9 @@ public final class PrimitiveTypesActivityScreen {
 
     public static void inject(PrimitiveTypesActivity activity) {
         Bundle bundle = activity.getIntent().getExtras();
+        if (bundle == null) {
+            throw new NullPointerException("PrimitiveTypesActivity has empty Bundle. Use open() or openForResult() to launch activity.");
+        }
         activity.field1 = bundle.getInt("field1");
         activity.field2 = bundle.getFloat("field2");
         activity.field3 = bundle.getDouble("field3");

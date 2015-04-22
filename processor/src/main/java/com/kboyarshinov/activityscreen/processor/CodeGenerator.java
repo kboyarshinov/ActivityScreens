@@ -195,11 +195,16 @@ public final class CodeGenerator {
     }
 
     private MethodSpec generateInjectMethod(TypeElement annotatedClassElement, Iterable<ParameterSpec> parameters) {
+        TypeName activityTypeName = TypeName.get(annotatedClassElement.asType());
         MethodSpec.Builder injectBuilder = MethodSpec.methodBuilder("inject").
                 addModifiers(Modifier.PUBLIC, Modifier.STATIC).
-                addParameter(TypeName.get(annotatedClassElement.asType()), "activity").
+                addParameter(activityTypeName, "activity").
                 returns(void.class);
+        ClassName npe = ClassName.get(NullPointerException.class);
         injectBuilder.addStatement("$T bundle = activity.getIntent().getExtras()", bundleClassName);
+        injectBuilder.beginControlFlow("if (bundle == null)");
+        injectBuilder.addStatement("throw new $T(\"$T has empty Bundle. Use open() or openForResult() to launch activity.\")", npe, activityTypeName);
+        injectBuilder.endControlFlow();
         for (ParameterSpec parameter : parameters) {
             injectBuilder.addStatement("activity.$L = bundle.get$L($S)", parameter.name, getArgumentTypeString(parameter), parameter.name);
         }

@@ -3,6 +3,7 @@ package types;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import java.lang.NullPointerException;
 
 public final class PrimitiveArraysActivityScreen {
     public final int array1[];
@@ -50,6 +51,9 @@ public final class PrimitiveArraysActivityScreen {
 
     public static void inject(PrimitiveArraysActivity activity) {
         Bundle bundle = activity.getIntent().getExtras();
+        if (bundle == null) {
+            throw new NullPointerException("PrimitiveArraysActivity has empty Bundle. Use open() or openForResult() to launch activity.");
+        }
         activity.array1 = bundle.getIntArray("array1");
         activity.array2 = bundle.getFloatArray("array2");
         activity.array3 = bundle.getDoubleArray("array3");
