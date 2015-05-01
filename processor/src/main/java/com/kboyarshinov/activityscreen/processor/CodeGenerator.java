@@ -5,10 +5,16 @@ import com.squareup.javapoet.*;
 import org.apache.commons.lang3.text.WordUtils;
 
 import javax.annotation.processing.Filer;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Kirill Boyarshinov
@@ -18,8 +24,6 @@ public final class CodeGenerator {
     private final ClassName activityClassName = ClassName.get("android.app", "Activity");
     private final ClassName bundleClassName = ClassName.get("android.os", "Bundle");
 
-    private final Map<String, String> argumentTypes = new HashMap<String, String>();
-
     private final Elements elementUtils;
 
     private final Filer filer;
@@ -27,38 +31,6 @@ public final class CodeGenerator {
     public CodeGenerator(Elements elementUtils, Filer filer) {
         this.elementUtils = elementUtils;
         this.filer = filer;
-        fillArguments();
-    }
-
-    private void fillArguments() {
-        argumentTypes.put("int", "Int");
-        argumentTypes.put("int[]", "IntArray");
-        argumentTypes.put("long", "Long");
-        argumentTypes.put("long[]", "LongArray");
-        argumentTypes.put("double", "Double");
-        argumentTypes.put("double[]", "DoubleArray");
-        argumentTypes.put("short", "Short");
-        argumentTypes.put("short[]", "ShortArray");
-        argumentTypes.put("float", "Float");
-        argumentTypes.put("float[]", "FloatArray");
-        argumentTypes.put("byte", "Byte");
-        argumentTypes.put("byte[]", "ByteArray");
-        argumentTypes.put("boolean", "Boolean");
-        argumentTypes.put("boolean[]", "BooleanArray");
-        argumentTypes.put("char", "Char");
-        argumentTypes.put("char[]", "CharArray");
-        argumentTypes.put("java.lang.Character", "Char");
-        argumentTypes.put("java.lang.Integer", "Int");
-        argumentTypes.put("java.lang.Long", "Long");
-        argumentTypes.put("java.lang.Double", "Double");
-        argumentTypes.put("java.lang.Short", "Short");
-        argumentTypes.put("java.lang.Float", "Float");
-        argumentTypes.put("java.lang.Byte", "Byte");
-        argumentTypes.put("java.lang.Boolean", "Boolean");
-        argumentTypes.put("java.lang.String", "String");
-        argumentTypes.put("java.lang.CharSequence", "CharSequence");
-        argumentTypes.put("java.lang.CharSequence[]", "CharSequenceArray");
-        argumentTypes.put("android.os.Bundle", "Bundle");
     }
 
     /**
@@ -81,47 +53,47 @@ public final class CodeGenerator {
             // collect parameters
             Set<ActivityArgAnnotatedField> requiredFields = annotatedClass.getRequiredFields();
             Set<ActivityArgAnnotatedField> optionalFields = annotatedClass.getOptionalFields();
-            List<ParameterSpec> requiredParameters = new ArrayList<ParameterSpec>(requiredFields.size());
-            List<ParameterSpec> optionalParameters = new ArrayList<ParameterSpec>(optionalFields.size());
+            List<Argument> requiredArguments = new ArrayList<Argument>(requiredFields.size());
+            List<Argument> optionalArguments = new ArrayList<Argument>(optionalFields.size());
             for (ActivityArgAnnotatedField field : requiredFields) {
-                requiredParameters.add(ParameterSpec.builder(parseType(field), field.getKey()).build());
+                requiredArguments.add(Argument.from(field));
             }
             for (ActivityArgAnnotatedField field : optionalFields) {
-                optionalParameters.add(ParameterSpec.builder(parseType(field), field.getKey()).build());
+                optionalArguments.add(Argument.from(field));
             }
 
             // add fields
-            for (ParameterSpec requiredParameter : requiredParameters) {
-                classBuilder.addField(requiredParameter.type, requiredParameter.name, Modifier.PUBLIC, Modifier.FINAL);
+            for (Argument argument : requiredArguments) {
+                classBuilder.addField(argument.asField(Modifier.PUBLIC, Modifier.FINAL));
             }
-            for (ParameterSpec optionalParameter : optionalParameters) {
-                classBuilder.addField(optionalParameter.type, optionalParameter.name, Modifier.PRIVATE);
+            for (Argument argument : optionalArguments) {
+                classBuilder.addField(argument.asField(Modifier.PRIVATE));
             }
 
             // add constructor
             MethodSpec.Builder costructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
-            for (ParameterSpec requiredParameter : requiredParameters) {
-                costructorBuilder.addParameter(requiredParameter);
-                costructorBuilder.addStatement("this.$L = $L", requiredParameter.name, requiredParameter.name);
+            for (Argument argument : requiredArguments) {
+                costructorBuilder.addParameter(argument.asParameter());
+                costructorBuilder.addStatement("this.$L = $L", argument.name, argument.name);
             }
             MethodSpec constructor = costructorBuilder.build();
             classBuilder.addMethod(constructor);
 
             // add setters
-            for (ParameterSpec optionalParameter : optionalParameters) {
-                MethodSpec setter = MethodSpec.methodBuilder(String.format("set%s", WordUtils.capitalize(optionalParameter.name))).
-                    addStatement("this.$L = $L", optionalParameter.name, optionalParameter.name).
-                    addStatement("return this").
-                    returns(activityScreenClassName).
+            for (Argument argument : optionalArguments) {
+                MethodSpec setter = MethodSpec.methodBuilder(String.format("set%s", WordUtils.capitalize(argument.name))).
+                        addStatement("this.$L = $L", argument.name, argument.name).
+                        addStatement("return this").
+                        returns(activityScreenClassName).
                     addModifiers(Modifier.PUBLIC).build();
                 classBuilder.addMethod(setter);
             }
 
             // add getters
-            for (ParameterSpec optionalParameter : optionalParameters) {
-                MethodSpec getter = MethodSpec.methodBuilder(String.format("get%s", WordUtils.capitalize(optionalParameter.name))).
-                        addStatement("return $L", optionalParameter.name).
-                        returns(optionalParameter.type).
+            for (Argument argument : optionalArguments) {
+                MethodSpec getter = MethodSpec.methodBuilder(String.format("get%s", WordUtils.capitalize(argument.name))).
+                        addStatement("return $L", argument.name).
+                        returns(argument.typeName).
                         addModifiers(Modifier.PUBLIC).build();
                 classBuilder.addMethod(getter);
             }
@@ -129,14 +101,14 @@ public final class CodeGenerator {
             // add open, openForResult, create methods
             MethodSpec openMethod = generateOpenMethod(false);
             MethodSpec openForResultMethod = generateOpenMethod(true);
-            MethodSpec createIntentMethod = generateToIntentMethod(activitySimpleName, requiredParameters, optionalParameters);
+            MethodSpec createIntentMethod = generateToIntentMethod(activitySimpleName, requiredArguments, optionalArguments);
             classBuilder.addMethod(openMethod).
                     addMethod(openForResultMethod).
                     addMethod(createIntentMethod);
 
             // add inject method if needed
-            if (!requiredParameters.isEmpty() || !optionalParameters.isEmpty()) {
-                MethodSpec injectMethod = generateInjectMethod(annotatedClassElement, Iterables.concat(requiredParameters, optionalParameters));
+            if (!requiredArguments.isEmpty() || !optionalArguments.isEmpty()) {
+                MethodSpec injectMethod = generateInjectMethod(annotatedClassElement, Iterables.concat(requiredArguments, optionalArguments));
                 classBuilder.addMethod(injectMethod);
             }
 
@@ -145,17 +117,6 @@ public final class CodeGenerator {
             JavaFile javaFile = JavaFile.builder(packageName, screenClass).indent("    ").build();
             javaFile.writeTo(filer);
         }
-    }
-
-    private TypeName parseType(ActivityArgAnnotatedField field) throws UnsupportedTypeException {
-        String type = field.getType();
-        Element element = field.getElement();
-        if (!argumentTypes.containsKey(type))
-            throw new UnsupportedTypeException(element);
-        if (field.isArray()) {
-            return ArrayTypeName.get(element.asType());
-        }
-        return TypeName.get(element.asType());
     }
 
     private MethodSpec generateOpenMethod(boolean forResult) {
@@ -173,20 +134,20 @@ public final class CodeGenerator {
         return openMethodBuilder.build();
     }
 
-    private MethodSpec generateToIntentMethod(Name activitySimpleName, Iterable<ParameterSpec> requiredParameters, Iterable<ParameterSpec> optionalParameters) {
+    private MethodSpec generateToIntentMethod(Name activitySimpleName, Iterable<Argument> requiredArguments, Iterable<Argument> optionalArguments) {
         MethodSpec.Builder createIntentBuilder = MethodSpec.methodBuilder("toIntent").
                 addModifiers(Modifier.PUBLIC).
                 addParameter(activityClassName, "activity").
                 returns(intentClassName);
         createIntentBuilder.addStatement("$T intent = new $T(activity, $L.class)", intentClassName, intentClassName, activitySimpleName);
-        for (ParameterSpec parameter : requiredParameters) {
-            createIntentBuilder.addStatement("intent.putExtra($S, $L)", parameter.name, parameter.name);
+        for (Argument argument : requiredArguments) {
+            createIntentBuilder.addStatement("intent.putExtra($S, $L)", argument.name, argument.name);
         }
-        for (ParameterSpec parameter : optionalParameters) {
-            boolean primitive = parameter.type.isPrimitive();
+        for (Argument argument : optionalArguments) {
+            boolean primitive = argument.typeName.isPrimitive();
             if (!primitive)
-                createIntentBuilder.beginControlFlow("if ($L != null)", parameter.name);
-            createIntentBuilder.addStatement("intent.putExtra($S, $L)", parameter.name, parameter.name);
+                createIntentBuilder.beginControlFlow("if ($L != null)", argument.name);
+            createIntentBuilder.addStatement("intent.putExtra($S, $L)", argument.name, argument.name);
             if (!primitive)
                 createIntentBuilder.endControlFlow();
         }
@@ -194,7 +155,7 @@ public final class CodeGenerator {
         return createIntentBuilder.build();
     }
 
-    private MethodSpec generateInjectMethod(TypeElement annotatedClassElement, Iterable<ParameterSpec> parameters) {
+    private MethodSpec generateInjectMethod(TypeElement annotatedClassElement, Iterable<Argument> arguments) {
         TypeName activityTypeName = TypeName.get(annotatedClassElement.asType());
         MethodSpec.Builder injectBuilder = MethodSpec.methodBuilder("inject").
                 addModifiers(Modifier.PUBLIC, Modifier.STATIC).
@@ -205,13 +166,9 @@ public final class CodeGenerator {
         injectBuilder.beginControlFlow("if (bundle == null)");
         injectBuilder.addStatement("throw new $T(\"$T has empty Bundle. Use open() or openForResult() to launch activity.\")", npe, activityTypeName);
         injectBuilder.endControlFlow();
-        for (ParameterSpec parameter : parameters) {
-            injectBuilder.addStatement("activity.$L = bundle.get$L($S)", parameter.name, getArgumentTypeString(parameter), parameter.name);
+        for (Argument argument : arguments) {
+            injectBuilder.addStatement("activity.$L = bundle.get$L($S)", argument.name, argument.type.name, argument.name);
         }
         return injectBuilder.build();
-    }
-
-    private String getArgumentTypeString(ParameterSpec parameterSpec) {
-        return argumentTypes.get(parameterSpec.type.toString());
     }
 }
