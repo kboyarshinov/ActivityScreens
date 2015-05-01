@@ -54,46 +54,47 @@ public class Argument {
         return ParameterSpec.builder(typeName, name).build();
     }
 
-    private static HashMap<String, String> operationsForType = new HashMap<String, String>();
+    private static HashMap<String, String> simpleOperations = new HashMap<String, String>();
 
     static {
-        operationsForType.put("int", "Int");
-        operationsForType.put("int[]", "IntArray");
-        operationsForType.put("long", "Long");
-        operationsForType.put("long[]", "LongArray");
-        operationsForType.put("double", "Double");
-        operationsForType.put("double[]", "DoubleArray");
-        operationsForType.put("short", "Short");
-        operationsForType.put("short[]", "ShortArray");
-        operationsForType.put("float", "Float");
-        operationsForType.put("float[]", "FloatArray");
-        operationsForType.put("byte", "Byte");
-        operationsForType.put("byte[]", "ByteArray");
-        operationsForType.put("boolean", "Boolean");
-        operationsForType.put("boolean[]", "BooleanArray");
-        operationsForType.put("char", "Char");
-        operationsForType.put("char[]", "CharArray");
-        operationsForType.put("java.lang.Character", "Char");
-        operationsForType.put("java.lang.Integer", "Int");
-        operationsForType.put("java.lang.Long", "Long");
-        operationsForType.put("java.lang.Double", "Double");
-        operationsForType.put("java.lang.Short", "Short");
-        operationsForType.put("java.lang.Float", "Float");
-        operationsForType.put("java.lang.Byte", "Byte");
-        operationsForType.put("java.lang.Boolean", "Boolean");
-        operationsForType.put("java.lang.String", "String");
-        operationsForType.put("java.lang.CharSequence", "CharSequence");
-        operationsForType.put("java.lang.CharSequence[]", "CharSequenceArray");
-        operationsForType.put("android.os.Bundle", "Bundle");
-        operationsForType.put("android.os.Parcelable", "Parcelable");
-        operationsForType.put("android.os.Parcelable[]", "ParcelableArray");
+        simpleOperations.put("int", "Int");
+        simpleOperations.put("int[]", "IntArray");
+        simpleOperations.put("long", "Long");
+        simpleOperations.put("long[]", "LongArray");
+        simpleOperations.put("double", "Double");
+        simpleOperations.put("double[]", "DoubleArray");
+        simpleOperations.put("short", "Short");
+        simpleOperations.put("short[]", "ShortArray");
+        simpleOperations.put("float", "Float");
+        simpleOperations.put("float[]", "FloatArray");
+        simpleOperations.put("byte", "Byte");
+        simpleOperations.put("byte[]", "ByteArray");
+        simpleOperations.put("boolean", "Boolean");
+        simpleOperations.put("boolean[]", "BooleanArray");
+        simpleOperations.put("char", "Char");
+        simpleOperations.put("char[]", "CharArray");
+        simpleOperations.put("java.lang.Character", "Char");
+        simpleOperations.put("java.lang.Integer", "Int");
+        simpleOperations.put("java.lang.Long", "Long");
+        simpleOperations.put("java.lang.Double", "Double");
+        simpleOperations.put("java.lang.Short", "Short");
+        simpleOperations.put("java.lang.Float", "Float");
+        simpleOperations.put("java.lang.Byte", "Byte");
+        simpleOperations.put("java.lang.Boolean", "Boolean");
+        simpleOperations.put("java.lang.String", "String");
+        simpleOperations.put("java.lang.String[]", "StringArray");
+        simpleOperations.put("java.lang.CharSequence", "CharSequence");
+        simpleOperations.put("java.lang.CharSequence[]", "CharSequenceArray");
+        simpleOperations.put("android.os.Bundle", "Bundle");
+        simpleOperations.put("android.os.Parcelable", "Parcelable");
+        simpleOperations.put("android.os.Parcelable[]", "ParcelableArray");
     }
 
     public static Argument from(ActivityArgAnnotatedField field, Elements elementUtils, Types typeUtils) throws UnsupportedTypeException {
         String name = field.getKey();
         String rawType = field.getType();
         Element element = field.getElement();
-        String operation = operationsForType.get(rawType);
+        String operation = simpleOperations.get(rawType);
         TypeMirror typeMirror = element.asType();
         if (operation == null) {
             TypeMirror parcelableType = elementUtils.getTypeElement("android.os.Parcelable").asType();

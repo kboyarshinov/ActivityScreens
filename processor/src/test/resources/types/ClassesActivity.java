@@ -23,4 +23,6 @@ public class ClassesActivity extends Activity {
     Parcelable[] field6;
     @ActivityArg
     ParcelableClass field7;
+    @ActivityArg
+    String[] field8;
 }

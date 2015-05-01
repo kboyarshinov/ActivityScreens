@@ -18,8 +18,9 @@ public final class ClassesActivityScreen {
     public final Parcelable field5;
     public final Parcelable[] field6;
     public final ParcelableClass field7;
+    public final String[] field8;
 
-    public ClassesActivityScreen(String field1, CharSequence field2, CharSequence[] field3, Bundle field4, Parcelable field5, Parcelable[] field6, ParcelableClass field7) {
+    public ClassesActivityScreen(String field1, CharSequence field2, CharSequence[] field3, Bundle field4, Parcelable field5, Parcelable[] field6, ParcelableClass field7, String[] field8) {
         this.field1 = field1;
         this.field2 = field2;
         this.field3 = field3;
@@ -27,6 +28,7 @@ public final class ClassesActivityScreen {
         this.field5 = field5;
         this.field6 = field6;
         this.field7 = field7;
+        this.field8 = field8;
     }
 
     public void open(Activity activity) {
@@ -48,6 +50,7 @@ public final class ClassesActivityScreen {
         intent.putExtra("field5", field5);
         intent.putExtra("field6", field6);
         intent.putExtra("field7", field7);
+        intent.putExtra("field8", field8);
         return intent;
     }
 
@@ -63,5 +66,6 @@ public final class ClassesActivityScreen {
         activity.field5 = bundle.getParcelable("field5");
         activity.field6 = bundle.getParcelableArray("field6");
         activity.field7 = bundle.getParcelable("field7");
+        activity.field8 = bundle.getStringArray("field8");
     }
 }
