@@ -1,6 +1,7 @@
 package com.kboyarshinov.activityscreen.processor;
 
 import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 
@@ -15,14 +16,34 @@ import java.util.HashMap;
  * @author Kirill Boyarshinov
  */
 public class Argument {
-    public final String name;
-    public final String operation;
-    public final TypeName typeName;
+    private final String name;
+    private final String operation;
+    private final TypeName typeName;
 
     public Argument(String name, String operation, TypeName typeName) {
         this.name = name;
         this.operation = operation;
         this.typeName = typeName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public TypeName getTypeName() {
+        return typeName;
+    }
+
+    public void generatePutMethod(MethodSpec.Builder builder) {
+        builder.addStatement("intent.putExtra($S, $L)", name, name);
+    }
+
+    public void generateGetMethod(MethodSpec.Builder builder) {
+        builder.addStatement("activity.$L = bundle.get$L($S)", name, operation, name);
     }
 
     public FieldSpec asField(Modifier... modifiers) {
@@ -76,7 +97,6 @@ public class Argument {
         TypeMirror typeMirror = element.asType();
         if (operation == null) {
             TypeMirror parcelableType = elementUtils.getTypeElement("android.os.Parcelable").asType();
-
             if (typeUtils.isAssignable(typeMirror, parcelableType)) {
                 operation = "Parcelable";
             } else {

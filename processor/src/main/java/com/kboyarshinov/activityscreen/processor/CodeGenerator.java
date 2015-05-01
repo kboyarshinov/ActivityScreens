@@ -76,27 +76,29 @@ public final class CodeGenerator {
             MethodSpec.Builder costructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
             for (Argument argument : requiredArguments) {
                 costructorBuilder.addParameter(argument.asParameter());
-                costructorBuilder.addStatement("this.$L = $L", argument.name, argument.name);
+                String name = argument.getName();
+                costructorBuilder.addStatement("this.$L = $L", name, name);
             }
             MethodSpec constructor = costructorBuilder.build();
             classBuilder.addMethod(constructor);
 
             // add setters
             for (Argument argument : optionalArguments) {
-                MethodSpec setter = MethodSpec.methodBuilder(String.format("set%s", WordUtils.capitalize(argument.name))).
-                        addStatement("this.$L = $L", argument.name, argument.name).
-                        addStatement("return this").
-                        returns(activityScreenClassName).
+                String name = argument.getName();
+                MethodSpec setter = MethodSpec.methodBuilder(String.format("set%s", WordUtils.capitalize(argument.getName()))).
+                    addStatement("this.$L = $L", name, name).
+                    addStatement("return this").
+                    returns(activityScreenClassName).
                     addModifiers(Modifier.PUBLIC).build();
                 classBuilder.addMethod(setter);
             }
 
             // add getters
             for (Argument argument : optionalArguments) {
-                MethodSpec getter = MethodSpec.methodBuilder(String.format("get%s", WordUtils.capitalize(argument.name))).
-                        addStatement("return $L", argument.name).
-                        returns(argument.typeName).
-                        addModifiers(Modifier.PUBLIC).build();
+                MethodSpec getter = MethodSpec.methodBuilder(String.format("get%s", WordUtils.capitalize(argument.getName()))).
+                    addStatement("return $L", argument.getName()).
+                    returns(argument.getTypeName()).
+                    addModifiers(Modifier.PUBLIC).build();
                 classBuilder.addMethod(getter);
             }
 
@@ -143,13 +145,13 @@ public final class CodeGenerator {
                 returns(intentClassName);
         createIntentBuilder.addStatement("$T intent = new $T(activity, $L.class)", intentClassName, intentClassName, activitySimpleName);
         for (Argument argument : requiredArguments) {
-            createIntentBuilder.addStatement("intent.putExtra($S, $L)", argument.name, argument.name);
+            argument.generatePutMethod(createIntentBuilder);
         }
         for (Argument argument : optionalArguments) {
-            boolean primitive = argument.typeName.isPrimitive();
+            boolean primitive = argument.getTypeName().isPrimitive();
             if (!primitive)
-                createIntentBuilder.beginControlFlow("if ($L != null)", argument.name);
-            createIntentBuilder.addStatement("intent.putExtra($S, $L)", argument.name, argument.name);
+                createIntentBuilder.beginControlFlow("if ($L != null)", argument.getName());
+            argument.generatePutMethod(createIntentBuilder);
             if (!primitive)
                 createIntentBuilder.endControlFlow();
         }
@@ -169,7 +171,7 @@ public final class CodeGenerator {
         injectBuilder.addStatement("throw new $T(\"$T has empty Bundle. Use open() or openForResult() to launch activity.\")", npe, activityTypeName);
         injectBuilder.endControlFlow();
         for (Argument argument : arguments) {
-            injectBuilder.addStatement("activity.$L = bundle.get$L($S)", argument.name, argument.operation, argument.name);
+            argument.generateGetMethod(injectBuilder);
         }
         return injectBuilder.build();
     }
