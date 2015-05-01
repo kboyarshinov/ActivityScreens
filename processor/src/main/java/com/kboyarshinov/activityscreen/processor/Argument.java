@@ -1,5 +1,6 @@
 package com.kboyarshinov.activityscreen.processor;
 
+import com.kboyarshinov.activityscreen.processor.args.ParcelableArrayArgument;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
@@ -20,7 +21,7 @@ public class Argument {
     private final String operation;
     private final TypeName typeName;
 
-    public Argument(String name, String operation, TypeName typeName) {
+    protected Argument(String name, String operation, TypeName typeName) {
         this.name = name;
         this.operation = operation;
         this.typeName = typeName;
@@ -54,7 +55,7 @@ public class Argument {
         return ParameterSpec.builder(typeName, name).build();
     }
 
-    private static HashMap<String, String> simpleOperations = new HashMap<String, String>();
+    private static HashMap<String, String> simpleOperations = new HashMap<String, String>(31);
 
     static {
         simpleOperations.put("int", "Int");
@@ -92,19 +93,24 @@ public class Argument {
 
     public static Argument from(ActivityArgAnnotatedField field, Elements elementUtils, Types typeUtils) throws UnsupportedTypeException {
         String name = field.getKey();
-        String rawType = field.getType();
         Element element = field.getElement();
-        String operation = simpleOperations.get(rawType);
         TypeMirror typeMirror = element.asType();
-        if (operation == null) {
-            TypeMirror parcelableType = elementUtils.getTypeElement("android.os.Parcelable").asType();
-            if (typeUtils.isAssignable(typeMirror, parcelableType)) {
-                operation = "Parcelable";
-            } else {
-                throw new UnsupportedTypeException(element);
-            }
-        }
         TypeName typeName = TypeName.get(typeMirror);
-        return new Argument(name, operation, typeName);
+
+        String rawType = field.getType();
+        String operation = simpleOperations.get(rawType);
+        if (operation != null)
+            return new Argument(name, operation, typeName);
+
+        TypeMirror parcelableType = elementUtils.getTypeElement("android.os.Parcelable").asType();
+        if (typeUtils.isAssignable(typeMirror, parcelableType)) {
+            operation = "Parcelable";
+            return new Argument(name, operation, typeName);
+        } else if (typeUtils.isAssignable(typeMirror, typeUtils.getArrayType(parcelableType))) {
+            operation = "ParcelableArray";
+            return new ParcelableArrayArgument(name, operation, typeName);
+        }
+
+        throw new UnsupportedTypeException(element);
     }
 }

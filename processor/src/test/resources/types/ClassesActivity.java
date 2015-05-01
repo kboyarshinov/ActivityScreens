@@ -25,4 +25,6 @@ public class ClassesActivity extends Activity {
     ParcelableClass field7;
     @ActivityArg
     String[] field8;
+    @ActivityArg
+    ParcelableClass[] field9;
 }
