@@ -18,6 +18,6 @@ public class UnsupportedTypeException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return "Unsupported type annotated with @ActivityArg: " + element.asType();
+        return "Unsupported operation annotated with @ActivityArg: " + element.asType();
     }
 }

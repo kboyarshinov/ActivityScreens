@@ -25,6 +25,8 @@ public class MainActivity extends ActionBarActivity {
     Parcelable[] field6;
     @ActivityArg
     ParcelableClass field7;
+    @ActivityArg
+    ParcelableClass[] field8;
 
 
     @Override

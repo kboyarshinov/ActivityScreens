@@ -169,7 +169,7 @@ public final class CodeGenerator {
         injectBuilder.addStatement("throw new $T(\"$T has empty Bundle. Use open() or openForResult() to launch activity.\")", npe, activityTypeName);
         injectBuilder.endControlFlow();
         for (Argument argument : arguments) {
-            injectBuilder.addStatement("activity.$L = bundle.get$L($S)", argument.name, argument.type.name, argument.name);
+            injectBuilder.addStatement("activity.$L = bundle.get$L($S)", argument.name, argument.operation, argument.name);
         }
         return injectBuilder.build();
     }
