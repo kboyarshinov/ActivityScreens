@@ -33,7 +33,10 @@ public enum ArgumentType {
     STRING("java.lang.String", "String"),
     CHARSEQUENCE("java.lang.CharSequence", "CharSequence"),
     CHARSEQUENCE_ARRAY("java.lang.CharSequence[]", "CharSequenceArray"),
-    BUNDLE("android.os.Bundle", "Bundle");
+    BUNDLE("android.os.Bundle", "Bundle"),
+    PARCELABLE("android.os.Parcelable", "Parcelable"),
+    PARCELABLE_ARRAY("android.os.Parcelable[]", "ParcelableArray"),
+    PARCELABLE_WILDCARD("Class<? extends Parcelable>", "Parcelable");
 
     public final String rawType;
     public final String name;

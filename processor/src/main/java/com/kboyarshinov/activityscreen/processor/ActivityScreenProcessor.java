@@ -39,7 +39,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
         elementUtils = processingEnv.getElementUtils();
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
-        codeGenerator = new CodeGenerator(elementUtils, filer);
+        codeGenerator = new CodeGenerator(elementUtils, typeUtils, filer);
     }
 
     @Override

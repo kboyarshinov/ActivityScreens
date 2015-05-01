@@ -10,6 +10,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,11 +26,12 @@ public final class CodeGenerator {
     private final ClassName bundleClassName = ClassName.get("android.os", "Bundle");
 
     private final Elements elementUtils;
-
+    private final Types typeUtils;
     private final Filer filer;
 
-    public CodeGenerator(Elements elementUtils, Filer filer) {
+    public CodeGenerator(Elements elementUtils, Types typeUtils, Filer filer) {
         this.elementUtils = elementUtils;
+        this.typeUtils = typeUtils;
         this.filer = filer;
     }
 
@@ -56,10 +58,10 @@ public final class CodeGenerator {
             List<Argument> requiredArguments = new ArrayList<Argument>(requiredFields.size());
             List<Argument> optionalArguments = new ArrayList<Argument>(optionalFields.size());
             for (ActivityArgAnnotatedField field : requiredFields) {
-                requiredArguments.add(Argument.from(field));
+                requiredArguments.add(Argument.from(field, elementUtils, typeUtils));
             }
             for (ActivityArgAnnotatedField field : optionalFields) {
-                optionalArguments.add(Argument.from(field));
+                optionalArguments.add(Argument.from(field, elementUtils, typeUtils));
             }
 
             // add fields

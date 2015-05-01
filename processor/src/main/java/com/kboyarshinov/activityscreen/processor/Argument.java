@@ -7,6 +7,9 @@ import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import java.awt.*;
 
 /**
  * @author Kirill Boyarshinov
@@ -30,13 +33,17 @@ public class Argument {
         return ParameterSpec.builder(typeName, name).build();
     }
 
-    public static Argument from(ActivityArgAnnotatedField field) throws UnsupportedTypeException {
+    public static Argument from(ActivityArgAnnotatedField field, Elements elementUtils, Types typeUtils) throws UnsupportedTypeException {
         String name = field.getKey();
         String rawType = field.getType();
         Element element = field.getElement();
         ArgumentType type = ArgumentType.from(rawType);
         if (type == null) {
-            throw new UnsupportedTypeException(element);
+            if (typeUtils.isAssignable(element.asType(), elementUtils.getTypeElement("android.os.Parcelable").asType())) {
+                type = ArgumentType.PARCELABLE_WILDCARD;
+            } else {
+                throw new UnsupportedTypeException(element);
+            }
         }
         TypeName typeName = TypeName.get(element.asType());
         return new Argument(name, type, typeName);
