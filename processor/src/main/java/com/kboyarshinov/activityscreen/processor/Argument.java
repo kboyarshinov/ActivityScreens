@@ -38,12 +38,7 @@ public class Argument {
         if (type == null) {
             throw new UnsupportedTypeException(element);
         }
-        TypeName typeName;
-        if (field.isArray()) {
-            typeName = ArrayTypeName.get(element.asType());
-        } else {
-            typeName = TypeName.get(element.asType());
-        }
+        TypeName typeName = TypeName.get(element.asType());
         return new Argument(name, type, typeName);
     }
 }
