@@ -27,6 +27,8 @@ public class ProcessorTest {
     private JavaFileObject protectedFieldActivity = JavaFileObjects.forResource("errors/ProtectedFieldActivity.java");
     private JavaFileObject privateStaticFinalFieldActivity = JavaFileObjects.forResource("errors/PrivateStaticFinalFieldActivity.java");
     private JavaFileObject duplicateKeysFieldsActivity = JavaFileObjects.forResource("errors/DuplicateKeysFieldsActivity.java");
+    private JavaFileObject differentKeyAndNameActivity = JavaFileObjects.forResource("misc/KeyAndNameActivity.java");
+    private JavaFileObject differentKeyAndNameActivityScreen = JavaFileObjects.forResource("misc/KeyAndNameActivityScreen.java");
 
     private JavaFileObject primitiveTypesActivity = JavaFileObjects.forResource("types/PrimitiveTypesActivity.java");
     private JavaFileObject primitiveTypesActivityScreen = JavaFileObjects.forResource("types/PrimitiveTypesActivityScreen.java");
@@ -125,6 +127,16 @@ public class ProcessorTest {
                 that(duplicateKeysFieldsActivity).
                 processedWith(new ActivityScreenProcessor()).
                 failsToCompile();
+    }
+
+    @Test
+    public void differentKeyAndName() {
+        ASSERT.about(javaSource()).
+                that(differentKeyAndNameActivity).
+                processedWith(new ActivityScreenProcessor()).
+                compilesWithoutError().
+                and().
+                generatesSources(differentKeyAndNameActivityScreen);
     }
 
     @Test

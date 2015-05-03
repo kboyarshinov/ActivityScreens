@@ -18,11 +18,13 @@ import java.util.HashMap;
  */
 public class Argument {
     private final String name;
+    private final String key;
     private final String operation;
     private final TypeName typeName;
 
-    protected Argument(String name, String operation, TypeName typeName) {
+    protected Argument(String name, String key, String operation, TypeName typeName) {
         this.name = name;
+        this.key = key;
         this.operation = operation;
         this.typeName = typeName;
     }
@@ -39,12 +41,16 @@ public class Argument {
         return typeName;
     }
 
+    public String getKey() {
+        return key;
+    }
+
     public void generatePutMethod(MethodSpec.Builder builder) {
-        builder.addStatement("intent.putExtra($S, $L)", name, name);
+        builder.addStatement("intent.putExtra($S, $L)", key, name);
     }
 
     public void generateGetMethod(MethodSpec.Builder builder) {
-        builder.addStatement("activity.$L = bundle.get$L($S)", name, operation, name);
+        builder.addStatement("activity.$L = bundle.get$L($S)", name, operation, key);
     }
 
     public FieldSpec asField(Modifier... modifiers) {
@@ -92,7 +98,8 @@ public class Argument {
     }
 
     public static Argument from(ActivityArgAnnotatedField field, Elements elementUtils, Types typeUtils) throws UnsupportedTypeException {
-        String name = field.getKey();
+        String key = field.getKey();
+        String name = field.getName();
         Element element = field.getElement();
         TypeMirror typeMirror = element.asType();
         TypeName typeName = TypeName.get(typeMirror);
@@ -100,15 +107,15 @@ public class Argument {
         String rawType = field.getType();
         String operation = simpleOperations.get(rawType);
         if (operation != null)
-            return new Argument(name, operation, typeName);
+            return new Argument(name, key, operation, typeName);
 
         TypeMirror parcelableType = elementUtils.getTypeElement("android.os.Parcelable").asType();
         if (typeUtils.isAssignable(typeMirror, parcelableType)) {
             operation = "Parcelable";
-            return new Argument(name, operation, typeName);
+            return new Argument(name, key, operation, typeName);
         } else if (typeUtils.isAssignable(typeMirror, typeUtils.getArrayType(parcelableType))) {
             operation = "ParcelableArray";
-            return new ParcelableArrayArgument(name, operation, typeName);
+            return new ParcelableArrayArgument(name, key, operation, typeName);
         }
 
         throw new UnsupportedTypeException(element);

@@ -11,14 +11,14 @@ import com.squareup.javapoet.TypeName;
  */
 public class ParcelableArrayArgument extends Argument {
 
-    public ParcelableArrayArgument(String name, String operation, TypeName typeName) {
-        super(name, operation, typeName);
+    public ParcelableArrayArgument(String name, String key, String operation, TypeName typeName) {
+        super(name, key, operation, typeName);
     }
 
     @Override
     public void generateGetMethod(MethodSpec.Builder builder) {
         String name = getName();
-        builder.addStatement("$T[] $LValue = bundle.get$L($S)", ClassName.get("android.os", "Parcelable"), name, getOperation(), name);
+        builder.addStatement("$T[] $LValue = bundle.get$L($S)", ClassName.get("android.os", "Parcelable"), name, getOperation(), getKey());
         builder.addStatement("activity.$L = new $T[$LValue.length]", name, ((ArrayTypeName) getTypeName()).componentType, name);
         builder.addStatement("System.arraycopy($LValue, 0, activity.$L, 0, $LValue.length)", name, name, name);
     }

@@ -1,4 +1,4 @@
-package errors;
+package misc;
 
 import android.app.Activity;
 
@@ -6,9 +6,7 @@ import com.kboyarshinov.activityscreens.annotation.ActivityArg;
 import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 
 @ActivityScreen
-public class EmptyActivity extends Activity {
-    @ActivityArg
-    int field;
-    @ActivityArg(key = "field")
-    int field2;
+public class KeyAndNameActivity extends Activity {
+    @ActivityArg(key = "key")
+    int name;
 }
