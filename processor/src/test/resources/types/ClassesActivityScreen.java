@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 
 import java.lang.CharSequence;
+import java.lang.IllegalStateException;
 import java.lang.NullPointerException;
 import java.lang.String;
 import model.ParcelableClass;
@@ -62,6 +63,7 @@ public final class ClassesActivityScreen {
         if (bundle == null) {
             throw new NullPointerException("ClassesActivity has empty Bundle. Use open() or openForResult() to launch activity.");
         }
+        checkArguments(bundle);
         activity.field1 = bundle.getString("field1");
         activity.field2 = bundle.getCharSequence("field2");
         activity.field3 = bundle.getCharSequenceArray("field3");
@@ -73,5 +75,35 @@ public final class ClassesActivityScreen {
         Parcelable[] field9Value = bundle.getParcelableArray("field9");
         activity.field9 = new ParcelableClass[field9Value.length];
         System.arraycopy(field9Value, 0, activity.field9, 0, field9Value.length);
+    }
+
+    private static void checkArguments(Bundle bundle) {
+        if (!bundle.containsKey("field1")) {
+            throw new IllegalStateException("Required argument field1 with key 'field1' is not set");
+        }
+        if (!bundle.containsKey("field2")) {
+            throw new IllegalStateException("Required argument field2 with key 'field2' is not set");
+        }
+        if (!bundle.containsKey("field3")) {
+            throw new IllegalStateException("Required argument field3 with key 'field3' is not set");
+        }
+        if (!bundle.containsKey("field4")) {
+            throw new IllegalStateException("Required argument field4 with key 'field4' is not set");
+        }
+        if (!bundle.containsKey("field5")) {
+            throw new IllegalStateException("Required argument field5 with key 'field5' is not set");
+        }
+        if (!bundle.containsKey("field6")) {
+            throw new IllegalStateException("Required argument field6 with key 'field6' is not set");
+        }
+        if (!bundle.containsKey("field7")) {
+            throw new IllegalStateException("Required argument field7 with key 'field7' is not set");
+        }
+        if (!bundle.containsKey("field8")) {
+            throw new IllegalStateException("Required argument field8 with key 'field8' is not set");
+        }
+        if (!bundle.containsKey("field9")) {
+            throw new IllegalStateException("Required argument field9 with key 'field9' is not set");
+        }
     }
 }

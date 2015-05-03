@@ -43,7 +43,6 @@ public final class CodeGenerator {
     public void generate(Collection<ActivityScreenAnnotatedClass> annotatedClasses) throws IOException, UnsupportedTypeException {
         for (ActivityScreenAnnotatedClass annotatedClass : annotatedClasses) {
             TypeElement annotatedClassElement = annotatedClass.getTypeElement();
-            TypeName activityTypeName = TypeName.get(annotatedClassElement.asType());
             Name activitySimpleName = annotatedClassElement.getSimpleName();
             String screenClassName = activitySimpleName + ActivityScreenAnnotatedClass.SUFFIX;
             PackageElement pkg = elementUtils.getPackageOf(annotatedClassElement);
@@ -116,6 +115,11 @@ public final class CodeGenerator {
                 classBuilder.addMethod(injectMethod);
             }
 
+            if (!requiredArguments.isEmpty()) {
+                MethodSpec checkArgumentsMethod = generateCheckArgumentsMethod(requiredArguments);
+                classBuilder.addMethod(checkArgumentsMethod);
+            }
+
             // write class to file
             TypeSpec screenClass = classBuilder.addModifiers(Modifier.PUBLIC, Modifier.FINAL).build();
             JavaFile javaFile = JavaFile.builder(packageName, screenClass).indent("    ").build();
@@ -159,6 +163,21 @@ public final class CodeGenerator {
         return createIntentBuilder.build();
     }
 
+    private MethodSpec generateCheckArgumentsMethod(List<Argument> requiredArguments) {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("checkArguments").
+            addModifiers(Modifier.PRIVATE, Modifier.STATIC).
+            addParameter(bundleClassName, "bundle").
+            returns(void.class);
+        ClassName exception = ClassName.get(IllegalStateException.class);
+        for (Argument argument : requiredArguments) {
+            String key = argument.getKey();
+            builder.beginControlFlow("if (!bundle.containsKey($S))", key);
+            builder.addStatement("throw new $T(\"Required argument $L with key '$L' is not set\")", exception, argument.getName(), key);
+            builder.endControlFlow();
+        }
+        return builder.build();
+    }
+
     private MethodSpec generateInjectMethod(TypeElement annotatedClassElement, Iterable<Argument> arguments) {
         TypeName activityTypeName = TypeName.get(annotatedClassElement.asType());
         MethodSpec.Builder injectBuilder = MethodSpec.methodBuilder("inject").
@@ -170,6 +189,7 @@ public final class CodeGenerator {
         injectBuilder.beginControlFlow("if (bundle == null)");
         injectBuilder.addStatement("throw new $T(\"$T has empty Bundle. Use open() or openForResult() to launch activity.\")", npe, activityTypeName);
         injectBuilder.endControlFlow();
+        injectBuilder.addStatement("checkArguments(bundle)");
         for (Argument argument : arguments) {
             argument.generateGetMethod(injectBuilder);
         }

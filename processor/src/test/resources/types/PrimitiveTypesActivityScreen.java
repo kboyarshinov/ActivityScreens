@@ -3,6 +3,7 @@ package types;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import java.lang.IllegalStateException;
 import java.lang.NullPointerException;
 
 public final class PrimitiveTypesActivityScreen {
@@ -54,6 +55,7 @@ public final class PrimitiveTypesActivityScreen {
         if (bundle == null) {
             throw new NullPointerException("PrimitiveTypesActivity has empty Bundle. Use open() or openForResult() to launch activity.");
         }
+        checkArguments(bundle);
         activity.field1 = bundle.getInt("field1");
         activity.field2 = bundle.getFloat("field2");
         activity.field3 = bundle.getDouble("field3");
@@ -62,5 +64,32 @@ public final class PrimitiveTypesActivityScreen {
         activity.field6 = bundle.getChar("field6");
         activity.field7 = bundle.getShort("field7");
         activity.field8 = bundle.getLong("field8");
+    }
+
+    private static void checkArguments(Bundle bundle) {
+        if (!bundle.containsKey("field1")) {
+            throw new IllegalStateException("Required argument field1 with key 'field1' is not set");
+        }
+        if (!bundle.containsKey("field2")) {
+            throw new IllegalStateException("Required argument field2 with key 'field2' is not set");
+        }
+        if (!bundle.containsKey("field3")) {
+            throw new IllegalStateException("Required argument field3 with key 'field3' is not set");
+        }
+        if (!bundle.containsKey("field4")) {
+            throw new IllegalStateException("Required argument field4 with key 'field4' is not set");
+        }
+        if (!bundle.containsKey("field5")) {
+            throw new IllegalStateException("Required argument field5 with key 'field5' is not set");
+        }
+        if (!bundle.containsKey("field6")) {
+            throw new IllegalStateException("Required argument field6 with key 'field6' is not set");
+        }
+        if (!bundle.containsKey("field7")) {
+            throw new IllegalStateException("Required argument field7 with key 'field7' is not set");
+        }
+        if (!bundle.containsKey("field8")) {
+            throw new IllegalStateException("Required argument field8 with key 'field8' is not set");
+        }
     }
 }

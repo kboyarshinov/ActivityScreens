@@ -3,6 +3,7 @@ package types;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import java.lang.IllegalStateException;
 import java.lang.NullPointerException;
 
 public final class PrimitiveArraysActivityScreen {
@@ -54,6 +55,7 @@ public final class PrimitiveArraysActivityScreen {
         if (bundle == null) {
             throw new NullPointerException("PrimitiveArraysActivity has empty Bundle. Use open() or openForResult() to launch activity.");
         }
+        checkArguments(bundle);
         activity.array1 = bundle.getIntArray("array1");
         activity.array2 = bundle.getFloatArray("array2");
         activity.array3 = bundle.getDoubleArray("array3");
@@ -62,5 +64,32 @@ public final class PrimitiveArraysActivityScreen {
         activity.array6 = bundle.getCharArray("array6");
         activity.array7 = bundle.getShortArray("array7");
         activity.array8 = bundle.getLongArray("array8");
+    }
+
+    private static void checkArguments(Bundle bundle) {
+        if (!bundle.containsKey("array1")) {
+            throw new IllegalStateException("Required argument array1 with key 'array1' is not set");
+        }
+        if (!bundle.containsKey("array2")) {
+            throw new IllegalStateException("Required argument array2 with key 'array2' is not set");
+        }
+        if (!bundle.containsKey("array3")) {
+            throw new IllegalStateException("Required argument array3 with key 'array3' is not set");
+        }
+        if (!bundle.containsKey("array4")) {
+            throw new IllegalStateException("Required argument array4 with key 'array4' is not set");
+        }
+        if (!bundle.containsKey("array5")) {
+            throw new IllegalStateException("Required argument array5 with key 'array5' is not set");
+        }
+        if (!bundle.containsKey("array6")) {
+            throw new IllegalStateException("Required argument array6 with key 'array6' is not set");
+        }
+        if (!bundle.containsKey("array7")) {
+            throw new IllegalStateException("Required argument array7 with key 'array7' is not set");
+        }
+        if (!bundle.containsKey("array8")) {
+            throw new IllegalStateException("Required argument array8 with key 'array8' is not set");
+        }
     }
 }

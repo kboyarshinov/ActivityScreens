@@ -8,5 +8,5 @@ import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 @ActivityScreen
 public class KeyAndNameActivity extends Activity {
     @ActivityArg(key = "key")
-    int name;
+    String name;
 }

@@ -27,8 +27,8 @@ public class ProcessorTest {
     private JavaFileObject protectedFieldActivity = JavaFileObjects.forResource("errors/ProtectedFieldActivity.java");
     private JavaFileObject privateStaticFinalFieldActivity = JavaFileObjects.forResource("errors/PrivateStaticFinalFieldActivity.java");
     private JavaFileObject duplicateKeysFieldsActivity = JavaFileObjects.forResource("errors/DuplicateKeysFieldsActivity.java");
-    private JavaFileObject differentKeyAndNameActivity = JavaFileObjects.forResource("misc/KeyAndNameActivity.java");
-    private JavaFileObject differentKeyAndNameActivityScreen = JavaFileObjects.forResource("misc/KeyAndNameActivityScreen.java");
+    private JavaFileObject argumentWithCustomKeyActivity = JavaFileObjects.forResource("misc/KeyAndNameActivity.java");
+    private JavaFileObject argumentWithCustomKeyActivityScreen = JavaFileObjects.forResource("misc/KeyAndNameActivityScreen.java");
 
     private JavaFileObject primitiveTypesActivity = JavaFileObjects.forResource("types/PrimitiveTypesActivity.java");
     private JavaFileObject primitiveTypesActivityScreen = JavaFileObjects.forResource("types/PrimitiveTypesActivityScreen.java");
@@ -130,13 +130,13 @@ public class ProcessorTest {
     }
 
     @Test
-    public void differentKeyAndName() {
+    public void argumentWithCustomKey() {
         ASSERT.about(javaSource()).
-                that(differentKeyAndNameActivity).
+                that(argumentWithCustomKeyActivity).
                 processedWith(new ActivityScreenProcessor()).
                 compilesWithoutError().
                 and().
-                generatesSources(differentKeyAndNameActivityScreen);
+                generatesSources(argumentWithCustomKeyActivityScreen);
     }
 
     @Test

@@ -3,13 +3,14 @@ package misc;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-
+import java.lang.IllegalStateException;
 import java.lang.NullPointerException;
+import java.lang.String;
 
 public final class KeyAndNameActivityScreen {
-    public final int name;
+    public final String name;
 
-    public KeyAndNameActivityScreen(int name) {
+    public KeyAndNameActivityScreen(String name) {
         this.name = name;
     }
 
@@ -34,6 +35,13 @@ public final class KeyAndNameActivityScreen {
         if (bundle == null) {
             throw new NullPointerException("KeyAndNameActivity has empty Bundle. Use open() or openForResult() to launch activity.");
         }
-        activity.name = bundle.getInt("key");
+        checkArguments(bundle);
+        activity.name = bundle.getString("key");
+    }
+
+    private static void checkArguments(Bundle bundle) {
+        if (!bundle.containsKey("key")) {
+            throw new IllegalStateException("Required argument name with key 'key' is not set");
+        }
     }
 }
