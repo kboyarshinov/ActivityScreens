@@ -38,6 +38,8 @@ public class ProcessorTest {
     private JavaFileObject primitiveWrappersActivityScreen = JavaFileObjects.forResource("types/PrimitiveWrappersActivityScreen.java");
     private JavaFileObject classesActivity = JavaFileObjects.forResource("types/ClassesActivity.java");
     private JavaFileObject classesActivityScreen = JavaFileObjects.forResource("types/ClassesActivityScreen.java");
+    private JavaFileObject listsActivity = JavaFileObjects.forResource("types/ListsActivity.java");
+    private JavaFileObject listsActivityScreen = JavaFileObjects.forResource("types/ListsActivityScreen.java");
 
     @Test
     public void emptyActivity() {
@@ -87,6 +89,16 @@ public class ProcessorTest {
                 compilesWithoutError().
                 and().
                 generatesSources(classesActivityScreen);
+    }
+
+    @Test
+    public void lists() {
+        ASSERT.about(javaSource()).
+                that(listsActivity).
+                processedWith(new ActivityScreenProcessor()).
+                compilesWithoutError().
+                and().
+                generatesSources(listsActivityScreen);
     }
 
     @Test

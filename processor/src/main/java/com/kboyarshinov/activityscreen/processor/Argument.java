@@ -8,9 +8,11 @@ import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -22,11 +24,17 @@ public class Argument {
     private final String operation;
     private final TypeName typeName;
 
+    private String putOperation = "Extra";
+
     protected Argument(String name, String key, String operation, TypeName typeName) {
         this.name = name;
         this.key = key;
         this.operation = operation;
         this.typeName = typeName;
+    }
+
+    private void setPutOperation(String putOperation) {
+        this.putOperation = putOperation;
     }
 
     public String getName() {
@@ -46,7 +54,7 @@ public class Argument {
     }
 
     public void generatePutMethod(MethodSpec.Builder builder) {
-        builder.addStatement("intent.putExtra($S, $L)", key, name);
+        builder.addStatement("intent.put$L($S, $L)", putOperation, key, name);
     }
 
     public void generateGetMethod(MethodSpec.Builder builder) {
@@ -110,12 +118,19 @@ public class Argument {
             return new Argument(name, key, operation, typeName);
 
         TypeMirror parcelableType = elementUtils.getTypeElement("android.os.Parcelable").asType();
+        TypeElement arrayListType = elementUtils.getTypeElement(ArrayList.class.getName());
+        TypeMirror stringType = elementUtils.getTypeElement(String.class.getName()).asType();
         if (typeUtils.isAssignable(typeMirror, parcelableType)) {
             operation = "Parcelable";
             return new Argument(name, key, operation, typeName);
         } else if (typeUtils.isAssignable(typeMirror, typeUtils.getArrayType(parcelableType))) {
             operation = "ParcelableArray";
             return new ParcelableArrayArgument(name, key, operation, typeName);
+        } else if (typeUtils.isAssignable(typeMirror, typeUtils.getDeclaredType(arrayListType, stringType))) {
+            operation = "StringArrayList";
+            Argument argument = new Argument(name, key, operation, typeName);
+            argument.setPutOperation("StringArrayListExtra");
+            return argument;
         }
 
         throw new UnsupportedTypeException(element);
