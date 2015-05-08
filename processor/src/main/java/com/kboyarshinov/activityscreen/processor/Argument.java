@@ -120,6 +120,8 @@ public class Argument {
         TypeMirror parcelableType = elementUtils.getTypeElement("android.os.Parcelable").asType();
         TypeElement arrayListType = elementUtils.getTypeElement(ArrayList.class.getName());
         TypeMirror stringType = elementUtils.getTypeElement(String.class.getName()).asType();
+        TypeMirror integerType = elementUtils.getTypeElement(Integer.class.getName()).asType();
+        TypeMirror charSequenceType = elementUtils.getTypeElement(CharSequence.class.getName()).asType();
         if (typeUtils.isAssignable(typeMirror, parcelableType)) {
             operation = "Parcelable";
             return new Argument(name, key, operation, typeName);
@@ -130,6 +132,16 @@ public class Argument {
             operation = "StringArrayList";
             Argument argument = new Argument(name, key, operation, typeName);
             argument.setPutOperation("StringArrayListExtra");
+            return argument;
+        } else if (typeUtils.isAssignable(typeMirror, typeUtils.getDeclaredType(arrayListType, integerType))) {
+            operation = "IntegerArrayList";
+            Argument argument = new Argument(name, key, operation, typeName);
+            argument.setPutOperation("IntegerArrayListExtra");
+            return argument;
+        } else if (typeUtils.isAssignable(typeMirror, typeUtils.getDeclaredType(arrayListType, charSequenceType))) {
+            operation = "CharSequenceArrayList";
+            Argument argument = new Argument(name, key, operation, typeName);
+            argument.setPutOperation("CharSequenceArrayListExtra");
             return argument;
         }
 
