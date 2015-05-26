@@ -5,11 +5,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 
+import java.io.Serializable;
 import java.lang.CharSequence;
 import java.lang.IllegalStateException;
 import java.lang.NullPointerException;
 import java.lang.String;
+
 import model.ParcelableClass;
+import model.SerializableClass;
 
 public final class ClassesActivityScreen {
     public final String field1;
@@ -21,8 +24,10 @@ public final class ClassesActivityScreen {
     public final ParcelableClass field7;
     public final String[] field8;
     public final ParcelableClass[] field9;
+    public final Serializable field91;
+    public final SerializableClass field92;
 
-    public ClassesActivityScreen(String field1, CharSequence field2, CharSequence[] field3, Bundle field4, Parcelable field5, Parcelable[] field6, ParcelableClass field7, String[] field8, ParcelableClass[] field9) {
+    public ClassesActivityScreen(String field1, CharSequence field2, CharSequence[] field3, Bundle field4, Parcelable field5, Parcelable[] field6, ParcelableClass field7, String[] field8, ParcelableClass[] field9, Serializable field91, SerializableClass field92) {
         this.field1 = field1;
         this.field2 = field2;
         this.field3 = field3;
@@ -32,6 +37,8 @@ public final class ClassesActivityScreen {
         this.field7 = field7;
         this.field8 = field8;
         this.field9 = field9;
+        this.field91 = field91;
+        this.field92 = field92;
     }
 
     public void open(Activity activity) {
@@ -55,6 +62,8 @@ public final class ClassesActivityScreen {
         intent.putExtra("field7", field7);
         intent.putExtra("field8", field8);
         intent.putExtra("field9", field9);
+        intent.putExtra("field91", field91);
+        intent.putExtra("field92", field92);
         return intent;
     }
 
@@ -75,6 +84,8 @@ public final class ClassesActivityScreen {
         Parcelable[] field9Value = bundle.getParcelableArray("field9");
         activity.field9 = new ParcelableClass[field9Value.length];
         System.arraycopy(field9Value, 0, activity.field9, 0, field9Value.length);
+        activity.field91 = bundle.getSerializable("field91");
+        activity.field92 = (SerializableClass) bundle.getSerializable("field92");
     }
 
     private static void checkArguments(Bundle bundle) {
@@ -104,6 +115,12 @@ public final class ClassesActivityScreen {
         }
         if (!bundle.containsKey("field9")) {
             throw new IllegalStateException("Required argument field9 with key 'field9' is not set");
+        }
+        if (!bundle.containsKey("field91")) {
+            throw new IllegalStateException("Required argument field91 with key 'field91' is not set");
+        }
+        if (!bundle.containsKey("field92")) {
+            throw new IllegalStateException("Required argument field92 with key 'field92' is not set");
         }
     }
 }

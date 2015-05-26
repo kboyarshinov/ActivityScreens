@@ -6,6 +6,9 @@ import android.os.Parcelable;
 import com.kboyarshinov.activityscreens.annotation.ActivityArg;
 import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 import model.ParcelableClass;
+import model.SerializableClass;
+
+import java.io.Serializable;
 
 @ActivityScreen
 public class ClassesActivity extends Activity {
@@ -27,4 +30,8 @@ public class ClassesActivity extends Activity {
     String[] field8;
     @ActivityArg
     ParcelableClass[] field9;
+    @ActivityArg
+    Serializable field91;
+    @ActivityArg
+    SerializableClass field92;
 }

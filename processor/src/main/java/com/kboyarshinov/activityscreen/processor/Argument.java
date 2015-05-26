@@ -23,6 +23,7 @@ public class Argument {
     private final TypeName typeName;
 
     private String putOperation = "Extra";
+    private boolean requiresCast;
 
     public Argument(String name, String key, String operation, TypeName typeName) {
         this.name = name;
@@ -32,7 +33,13 @@ public class Argument {
     }
 
     public void setPutOperation(String putOperation) {
+        if (putOperation == null)
+            return;
         this.putOperation = putOperation;
+    }
+
+    public void setRequiresCast(boolean requiresCast) {
+        this.requiresCast = requiresCast;
     }
 
     public String getName() {
@@ -52,13 +59,15 @@ public class Argument {
     }
 
     public void generatePutMethod(MethodSpec.Builder builder) {
-        if (putOperation == null)
-            throw new NullPointerException("Put operation not set");
         builder.addStatement("intent.put$L($S, $L)", putOperation, key, name);
     }
 
     public void generateGetMethod(MethodSpec.Builder builder) {
-        builder.addStatement("activity.$L = bundle.get$L($S)", name, operation, key);
+        if (!requiresCast) {
+            builder.addStatement("activity.$L = bundle.get$L($S)", name, operation, key);
+        } else {
+            builder.addStatement("activity.$L = ($T) bundle.get$L($S)", name, typeName, operation, key);
+        }
     }
 
     public FieldSpec asField(Modifier... modifiers) {
@@ -70,7 +79,7 @@ public class Argument {
     }
 
 
-    private static HashMap<String, String> simpleOperations = new HashMap<String, String>(31);
+    private static HashMap<String, String> simpleOperations = new HashMap<String, String>(32);
     private static List<TypeCheck> typeChecks = new ArrayList<TypeCheck>();
 
     static {
@@ -105,6 +114,7 @@ public class Argument {
         simpleOperations.put("android.os.Bundle", "Bundle");
         simpleOperations.put("android.os.Parcelable", "Parcelable");
         simpleOperations.put("android.os.Parcelable[]", "ParcelableArray");
+        simpleOperations.put("java.io.Serializable", "Serializable");
 
         typeChecks.add(new ParcelableTypeCheck());
         typeChecks.add(new TypedArrayListTypeCheck(String.class.getName()) {
@@ -146,6 +156,7 @@ public class Argument {
                 return "ParcelableArray";
             }
         });
+        typeChecks.add(new SerializableTypeCheck());
     }
 
     public static Argument from(ActivityArgAnnotatedField field, TypeElements typeElements) throws UnsupportedTypeException {
