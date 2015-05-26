@@ -1,6 +1,6 @@
 package com.kboyarshinov.activityscreen.processor;
 
-import com.kboyarshinov.activityscreen.processor.args.ParcelableArrayArgument;
+import com.kboyarshinov.activityscreen.processor.typechecks.*;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
@@ -8,12 +8,10 @@ import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author Kirill Boyarshinov
@@ -26,14 +24,14 @@ public class Argument {
 
     private String putOperation = "Extra";
 
-    protected Argument(String name, String key, String operation, TypeName typeName) {
+    public Argument(String name, String key, String operation, TypeName typeName) {
         this.name = name;
         this.key = key;
         this.operation = operation;
         this.typeName = typeName;
     }
 
-    private void setPutOperation(String putOperation) {
+    public void setPutOperation(String putOperation) {
         this.putOperation = putOperation;
     }
 
@@ -54,6 +52,8 @@ public class Argument {
     }
 
     public void generatePutMethod(MethodSpec.Builder builder) {
+        if (putOperation == null)
+            throw new NullPointerException("Put operation not set");
         builder.addStatement("intent.put$L($S, $L)", putOperation, key, name);
     }
 
@@ -69,7 +69,9 @@ public class Argument {
         return ParameterSpec.builder(typeName, name).build();
     }
 
+
     private static HashMap<String, String> simpleOperations = new HashMap<String, String>(31);
+    private static List<TypeCheck> typeChecks = new ArrayList<TypeCheck>();
 
     static {
         simpleOperations.put("int", "Int");
@@ -103,9 +105,50 @@ public class Argument {
         simpleOperations.put("android.os.Bundle", "Bundle");
         simpleOperations.put("android.os.Parcelable", "Parcelable");
         simpleOperations.put("android.os.Parcelable[]", "ParcelableArray");
+
+        typeChecks.add(new ParcelableTypeCheck());
+        typeChecks.add(new TypedArrayListTypeCheck(String.class.getName()) {
+            @Override
+            protected String operationGet() {
+                return "StringArrayList";
+            }
+
+            @Override
+            protected String operationPut() {
+                return "StringArrayListExtra";
+            }
+        });
+        typeChecks.add(new TypedArrayListTypeCheck(Integer.class.getName()) {
+            @Override
+            protected String operationGet() {
+                return "IntegerArrayList";
+            }
+
+            @Override
+            protected String operationPut() {
+                return "IntegerArrayListExtra";
+            }
+        });
+        typeChecks.add(new TypedArrayListTypeCheck(CharSequence.class.getName()) {
+            @Override
+            protected String operationGet() {
+                return "CharSequenceArrayList";
+            }
+
+            @Override
+            protected String operationPut() {
+                return "CharSequenceArrayListExtra";
+            }
+        });
+        typeChecks.add(new ArrayTypeCheck("android.os.Parcelable") {
+            @Override
+            protected String operationPut() {
+                return "ParcelableArray";
+            }
+        });
     }
 
-    public static Argument from(ActivityArgAnnotatedField field, Elements elementUtils, Types typeUtils) throws UnsupportedTypeException {
+    public static Argument from(ActivityArgAnnotatedField field, TypeElements typeElements) throws UnsupportedTypeException {
         String key = field.getKey();
         String name = field.getName();
         Element element = field.getElement();
@@ -117,32 +160,9 @@ public class Argument {
         if (operation != null)
             return new Argument(name, key, operation, typeName);
 
-        TypeMirror parcelableType = elementUtils.getTypeElement("android.os.Parcelable").asType();
-        TypeElement arrayListType = elementUtils.getTypeElement(ArrayList.class.getName());
-        TypeMirror stringType = elementUtils.getTypeElement(String.class.getName()).asType();
-        TypeMirror integerType = elementUtils.getTypeElement(Integer.class.getName()).asType();
-        TypeMirror charSequenceType = elementUtils.getTypeElement(CharSequence.class.getName()).asType();
-        if (typeUtils.isAssignable(typeMirror, parcelableType)) {
-            operation = "Parcelable";
-            return new Argument(name, key, operation, typeName);
-        } else if (typeUtils.isAssignable(typeMirror, typeUtils.getArrayType(parcelableType))) {
-            operation = "ParcelableArray";
-            return new ParcelableArrayArgument(name, key, operation, typeName);
-        } else if (typeUtils.isAssignable(typeMirror, typeUtils.getDeclaredType(arrayListType, stringType))) {
-            operation = "StringArrayList";
-            Argument argument = new Argument(name, key, operation, typeName);
-            argument.setPutOperation("StringArrayListExtra");
-            return argument;
-        } else if (typeUtils.isAssignable(typeMirror, typeUtils.getDeclaredType(arrayListType, integerType))) {
-            operation = "IntegerArrayList";
-            Argument argument = new Argument(name, key, operation, typeName);
-            argument.setPutOperation("IntegerArrayListExtra");
-            return argument;
-        } else if (typeUtils.isAssignable(typeMirror, typeUtils.getDeclaredType(arrayListType, charSequenceType))) {
-            operation = "CharSequenceArrayList";
-            Argument argument = new Argument(name, key, operation, typeName);
-            argument.setPutOperation("CharSequenceArrayListExtra");
-            return argument;
+        for (TypeCheck typeCheck : typeChecks) {
+            if (typeCheck.check(typeMirror, typeElements))
+                return typeCheck.toArgument(name, key, typeName);
         }
 
         throw new UnsupportedTypeException(element);

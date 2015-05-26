@@ -1,6 +1,7 @@
 package com.kboyarshinov.activityscreen.processor;
 
 import com.google.common.collect.Iterables;
+import com.kboyarshinov.activityscreen.processor.typechecks.TypeElements;
 import com.squareup.javapoet.*;
 import org.apache.commons.lang3.text.WordUtils;
 
@@ -28,11 +29,13 @@ public final class CodeGenerator {
     private final Elements elementUtils;
     private final Types typeUtils;
     private final Filer filer;
+    private final TypeElements typeElements;
 
     public CodeGenerator(Elements elementUtils, Types typeUtils, Filer filer) {
         this.elementUtils = elementUtils;
         this.typeUtils = typeUtils;
         this.filer = filer;
+        this.typeElements = new TypeElements(elementUtils, typeUtils);
     }
 
     /**
@@ -57,10 +60,10 @@ public final class CodeGenerator {
             List<Argument> requiredArguments = new ArrayList<Argument>(requiredFields.size());
             List<Argument> optionalArguments = new ArrayList<Argument>(optionalFields.size());
             for (ActivityArgAnnotatedField field : requiredFields) {
-                requiredArguments.add(Argument.from(field, elementUtils, typeUtils));
+                requiredArguments.add(Argument.from(field, typeElements));
             }
             for (ActivityArgAnnotatedField field : optionalFields) {
-                optionalArguments.add(Argument.from(field, elementUtils, typeUtils));
+                optionalArguments.add(Argument.from(field, typeElements));
             }
 
             // add fields
