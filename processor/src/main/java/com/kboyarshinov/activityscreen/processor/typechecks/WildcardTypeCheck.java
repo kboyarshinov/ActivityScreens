@@ -5,24 +5,25 @@ import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import java.util.ArrayList;
 
 /**
  * @author Kirill Boyarshinov
  */
-public class WildcardArrayListTypeCheck implements TypeCheck {
+public class WildcardTypeCheck implements TypeCheck {
 
     private final String typeClassName;
+    private final String wildcardTypeClassName;
     private final String operation;
 
-    public WildcardArrayListTypeCheck(String typeClassName, String operation) {
+    public WildcardTypeCheck(String typeClassName, String wildcardTypeClassName, String operation) {
         this.typeClassName = typeClassName;
+        this.wildcardTypeClassName = wildcardTypeClassName;
         this.operation = operation;
     }
 
     @Override
     public boolean check(TypeMirror typeMirror, TypeElements typeElements) {
-        TypeElement arrayListType = typeElements.getElement(ArrayList.class.getName());
+        TypeElement arrayListType = typeElements.getElement(wildcardTypeClassName);
         TypeMirror type = typeElements.getElement(typeClassName).asType();
         TypeMirror declaredType = typeElements.getDeclaredType(arrayListType, typeElements.getWildCardType(type, null));
         return typeElements.isAssignable(typeMirror, declaredType);

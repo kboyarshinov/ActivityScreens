@@ -112,7 +112,8 @@ public class Argument {
         simpleOperations.put("java.io.Serializable", "Serializable");
 
         typeChecks.add(new ParcelableTypeCheck());
-        typeChecks.add(new WildcardArrayListTypeCheck("android.os.Parcelable", "ParcelableArrayList"));
+        typeChecks.add(new WildcardTypeCheck("android.os.Parcelable", ArrayList.class.getName(), "ParcelableArrayList"));
+        typeChecks.add(new WildcardTypeCheck("android.os.Parcelable", "android.util.SparseArray", "SparseParcelableArray"));
         typeChecks.add(new TypedArrayListTypeCheck(String.class.getName(), "StringArrayList"));
         typeChecks.add(new TypedArrayListTypeCheck(Integer.class.getName(), "IntegerArrayList"));
         typeChecks.add(new TypedArrayListTypeCheck(CharSequence.class.getName(), "CharSequenceArrayList"));

@@ -2,6 +2,7 @@ package types;
 
 import android.app.Activity;
 import android.os.Parcelable;
+import android.util.SparseArray;
 import com.kboyarshinov.activityscreens.annotation.ActivityArg;
 import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 import model.ParcelableClass;
@@ -20,4 +21,8 @@ public class ListsActivity extends Activity {
     ArrayList<Parcelable> list4;
     @ActivityArg
     ArrayList<ParcelableClass> list5;
+    @ActivityArg
+    SparseArray<Parcelable> list6;
+    @ActivityArg
+    SparseArray<ParcelableClass> list7;
 }
