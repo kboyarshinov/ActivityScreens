@@ -3,23 +3,30 @@ package types;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
+
 import java.lang.CharSequence;
 import java.lang.IllegalStateException;
 import java.lang.Integer;
 import java.lang.NullPointerException;
 import java.lang.String;
 import java.util.ArrayList;
+import model.ParcelableClass;
 
 public final class ListsActivityScreen {
 
     public final ArrayList<String> list1;
     public final ArrayList<Integer> list2;
     public final ArrayList<CharSequence> list3;
+    public final ArrayList<Parcelable> list4;
+    public final ArrayList<ParcelableClass> list5;
 
-    public ListsActivityScreen(ArrayList<String> list1, ArrayList<Integer> list2, ArrayList<CharSequence> list3) {
+    public ListsActivityScreen(ArrayList<String> list1, ArrayList<Integer> list2, ArrayList<CharSequence> list3, ArrayList<Parcelable> list4, ArrayList<ParcelableClass> list5) {
         this.list1 = list1;
         this.list2 = list2;
         this.list3 = list3;
+        this.list4 = list4;
+        this.list5 = list5;
     }
 
     public void open(Activity activity) {
@@ -38,6 +45,8 @@ public final class ListsActivityScreen {
         bundle.putStringArrayList("list1", list1);
         bundle.putIntegerArrayList("list2", list2);
         bundle.putCharSequenceArrayList("list3", list3);
+        bundle.putParcelableArrayList("list4", list4);
+        bundle.putParcelableArrayList("list5", list5);
         intent.putExtras(bundle);
         return intent;
     }
@@ -51,6 +60,8 @@ public final class ListsActivityScreen {
         activity.list1 = bundle.getStringArrayList("list1");
         activity.list2 = bundle.getIntegerArrayList("list2");
         activity.list3 = bundle.getCharSequenceArrayList("list3");
+        activity.list4 = bundle.getParcelableArrayList("list4");
+        activity.list5 = bundle.getParcelableArrayList("list5");
     }
 
     private static void checkArguments(Bundle bundle) {
@@ -62,6 +73,12 @@ public final class ListsActivityScreen {
         }
         if (!bundle.containsKey("list3")) {
             throw new IllegalStateException("Required argument list3 with key 'list3' is not set");
+        }
+        if (!bundle.containsKey("list4")) {
+            throw new IllegalStateException("Required argument list4 with key 'list4' is not set");
+        }
+        if (!bundle.containsKey("list5")) {
+            throw new IllegalStateException("Required argument list5 with key 'list5' is not set");
         }
     }
 }
