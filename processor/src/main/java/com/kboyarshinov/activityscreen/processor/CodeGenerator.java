@@ -78,7 +78,7 @@ public final class CodeGenerator {
             MethodSpec.Builder costructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
             for (Argument argument : requiredArguments) {
                 costructorBuilder.addParameter(argument.asParameter());
-                String name = argument.getName();
+                String name = argument.name();
                 costructorBuilder.addStatement("this.$L = $L", name, name);
             }
             MethodSpec constructor = costructorBuilder.build();
@@ -86,8 +86,8 @@ public final class CodeGenerator {
 
             // add setters
             for (Argument argument : optionalArguments) {
-                String name = argument.getName();
-                MethodSpec setter = MethodSpec.methodBuilder(String.format("set%s", WordUtils.capitalize(argument.getName()))).
+                String name = argument.name();
+                MethodSpec setter = MethodSpec.methodBuilder(String.format("set%s", WordUtils.capitalize(argument.name()))).
                     addStatement("this.$L = $L", name, name).
                     addStatement("return this").
                     returns(activityScreenClassName).
@@ -97,9 +97,9 @@ public final class CodeGenerator {
 
             // add getters
             for (Argument argument : optionalArguments) {
-                MethodSpec getter = MethodSpec.methodBuilder(String.format("get%s", WordUtils.capitalize(argument.getName()))).
-                    addStatement("return $L", argument.getName()).
-                    returns(argument.getTypeName()).
+                MethodSpec getter = MethodSpec.methodBuilder(String.format("get%s", WordUtils.capitalize(argument.name()))).
+                    addStatement("return $L", argument.name()).
+                    returns(argument.typeName()).
                     addModifiers(Modifier.PUBLIC).build();
                 classBuilder.addMethod(getter);
             }
@@ -145,22 +145,28 @@ public final class CodeGenerator {
         return openMethodBuilder.build();
     }
 
-    private MethodSpec generateToIntentMethod(Name activitySimpleName, Iterable<Argument> requiredArguments, Iterable<Argument> optionalArguments) {
+    private MethodSpec generateToIntentMethod(Name activitySimpleName, List<Argument> requiredArguments, List<Argument> optionalArguments) {
         MethodSpec.Builder createIntentBuilder = MethodSpec.methodBuilder("toIntent").
                 addModifiers(Modifier.PUBLIC).
                 addParameter(activityClassName, "activity").
                 returns(intentClassName);
         createIntentBuilder.addStatement("$T intent = new $T(activity, $L.class)", intentClassName, intentClassName, activitySimpleName);
+        if (!requiredArguments.isEmpty() || !optionalArguments.isEmpty()) {
+            createIntentBuilder.addStatement("$T bundle = new $T()", bundleClassName, bundleClassName);
+        }
         for (Argument argument : requiredArguments) {
             argument.generatePutMethod(createIntentBuilder);
         }
         for (Argument argument : optionalArguments) {
-            boolean primitive = argument.getTypeName().isPrimitive();
+            boolean primitive = argument.typeName().isPrimitive();
             if (!primitive)
-                createIntentBuilder.beginControlFlow("if ($L != null)", argument.getName());
+                createIntentBuilder.beginControlFlow("if ($L != null)", argument.name());
             argument.generatePutMethod(createIntentBuilder);
             if (!primitive)
                 createIntentBuilder.endControlFlow();
+        }
+        if (!requiredArguments.isEmpty() || !optionalArguments.isEmpty()) {
+            createIntentBuilder.addStatement("intent.putExtras(bundle)");
         }
         createIntentBuilder.addStatement("return intent");
         return createIntentBuilder.build();
@@ -173,9 +179,9 @@ public final class CodeGenerator {
             returns(void.class);
         ClassName exception = ClassName.get(IllegalStateException.class);
         for (Argument argument : requiredArguments) {
-            String key = argument.getKey();
+            String key = argument.key();
             builder.beginControlFlow("if (!bundle.containsKey($S))", key);
-            builder.addStatement("throw new $T(\"Required argument $L with key '$L' is not set\")", exception, argument.getName(), key);
+            builder.addStatement("throw new $T(\"Required argument $L with key '$L' is not set\")", exception, argument.name(), key);
             builder.endControlFlow();
         }
         return builder.build();

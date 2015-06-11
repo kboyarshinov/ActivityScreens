@@ -17,6 +17,7 @@ public final class ParcelableTypeCheck implements TypeCheck {
 
     @Override
     public Argument toArgument(String name, String key, TypeName typeName) {
-        return new Argument(name, key, "Parcelable", typeName);
+        String parcelable = "Parcelable";
+        return new Argument(name, key, parcelable, parcelable, typeName);
     }
 }

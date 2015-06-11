@@ -53,17 +53,19 @@ public final class ClassesActivityScreen {
 
     public Intent toIntent(Activity activity) {
         Intent intent = new Intent(activity, ClassesActivity.class);
-        intent.putExtra("field1", field1);
-        intent.putExtra("field2", field2);
-        intent.putExtra("field3", field3);
-        intent.putExtra("field4", field4);
-        intent.putExtra("field5", field5);
-        intent.putExtra("field6", field6);
-        intent.putExtra("field7", field7);
-        intent.putExtra("field8", field8);
-        intent.putExtra("field9", field9);
-        intent.putExtra("field91", field91);
-        intent.putExtra("field92", field92);
+        Bundle bundle = new Bundle();
+        bundle.putString("field1", field1);
+        bundle.putCharSequence("field2", field2);
+        bundle.putCharSequenceArray("field3", field3);
+        bundle.putBundle("field4", field4);
+        bundle.putParcelable("field5", field5);
+        bundle.putParcelableArray("field6", field6);
+        bundle.putParcelable("field7", field7);
+        bundle.putStringArray("field8", field8);
+        bundle.putParcelableArray("field9", field9);
+        bundle.putSerializable("field91", field91);
+        bundle.putSerializable("field92", field92);
+        intent.putExtras(bundle);
         return intent;
     }
 

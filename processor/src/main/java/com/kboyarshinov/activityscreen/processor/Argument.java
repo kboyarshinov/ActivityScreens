@@ -19,54 +19,49 @@ import java.util.List;
 public class Argument {
     private final String name;
     private final String key;
-    private final String operation;
+    private final String operationGet;
     private final TypeName typeName;
+    private final String operationPut;
 
-    private String putOperation = "Extra";
     private boolean requiresCast;
 
-    public Argument(String name, String key, String operation, TypeName typeName) {
+    public Argument(String name, String key, String operationGet, String operationPut, TypeName typeName) {
         this.name = name;
         this.key = key;
-        this.operation = operation;
+        this.operationGet = operationGet;
+        this.operationPut = operationPut;
         this.typeName = typeName;
-    }
-
-    public void setPutOperation(String putOperation) {
-        if (putOperation == null)
-            return;
-        this.putOperation = putOperation;
     }
 
     public void setRequiresCast(boolean requiresCast) {
         this.requiresCast = requiresCast;
     }
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
-    public String getOperation() {
-        return operation;
+    public String operationGet() {
+        return operationGet;
     }
 
-    public TypeName getTypeName() {
+    public TypeName typeName() {
         return typeName;
     }
 
-    public String getKey() {
+    public String key() {
         return key;
     }
 
     public void generatePutMethod(MethodSpec.Builder builder) {
-        builder.addStatement("intent.put$L($S, $L)", putOperation, key, name);
+        builder.addStatement("bundle.put$L($S, $L)", operationPut, key, name);
     }
 
     public void generateGetMethod(MethodSpec.Builder builder) {
         if (!requiresCast) {
-            builder.addStatement("activity.$L = bundle.get$L($S)", name, operation, key);
+            builder.addStatement("activity.$L = bundle.get$L($S)", name, operationGet, key);
         } else {
-            builder.addStatement("activity.$L = ($T) bundle.get$L($S)", name, typeName, operation, key);
+            builder.addStatement("activity.$L = ($T) bundle.get$L($S)", name, typeName, operationGet, key);
         }
     }
 
@@ -125,7 +120,7 @@ public class Argument {
 
             @Override
             protected String operationPut() {
-                return "StringArrayListExtra";
+                return "StringArrayList";
             }
         });
         typeChecks.add(new TypedArrayListTypeCheck(Integer.class.getName()) {
@@ -136,7 +131,7 @@ public class Argument {
 
             @Override
             protected String operationPut() {
-                return "IntegerArrayListExtra";
+                return "IntegerArrayList";
             }
         });
         typeChecks.add(new TypedArrayListTypeCheck(CharSequence.class.getName()) {
@@ -147,7 +142,7 @@ public class Argument {
 
             @Override
             protected String operationPut() {
-                return "CharSequenceArrayListExtra";
+                return "CharSequenceArrayList";
             }
         });
         typeChecks.add(new ArrayTypeCheck("android.os.Parcelable") {
@@ -169,7 +164,7 @@ public class Argument {
         String rawType = field.getType();
         String operation = simpleOperations.get(rawType);
         if (operation != null)
-            return new Argument(name, key, operation, typeName);
+            return new Argument(name, key, operation, operation, typeName);
 
         for (TypeCheck typeCheck : typeChecks) {
             if (typeCheck.check(typeMirror, typeElements))

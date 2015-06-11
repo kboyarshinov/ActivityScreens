@@ -26,7 +26,9 @@ public final class KeyAndNameActivityScreen {
 
     public Intent toIntent(Activity activity) {
         Intent intent = new Intent(activity, KeyAndNameActivity.class);
-        intent.putExtra("key", name);
+        Bundle bundle = new Bundle();
+        bundle.putString("key", name);
+        intent.putExtras(bundle);
         return intent;
     }
 

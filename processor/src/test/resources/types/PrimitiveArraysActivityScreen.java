@@ -39,14 +39,16 @@ public final class PrimitiveArraysActivityScreen {
 
     public Intent toIntent(Activity activity) {
         Intent intent = new Intent(activity, PrimitiveArraysActivity.class);
-        intent.putExtra("array1", array1);
-        intent.putExtra("array2", array2);
-        intent.putExtra("array3", array3);
-        intent.putExtra("array4", array4);
-        intent.putExtra("array5", array5);
-        intent.putExtra("array6", array6);
-        intent.putExtra("array7", array7);
-        intent.putExtra("array8", array8);
+        Bundle bundle = new Bundle();
+        bundle.putIntArray("array1", array1);
+        bundle.putFloatArray("array2", array2);
+        bundle.putDoubleArray("array3", array3);
+        bundle.putByteArray("array4", array4);
+        bundle.putBooleanArray("array5", array5);
+        bundle.putCharArray("array6", array6);
+        bundle.putShortArray("array7", array7);
+        bundle.putLongArray("array8", array8);
+        intent.putExtras(bundle);
         return intent;
     }
 

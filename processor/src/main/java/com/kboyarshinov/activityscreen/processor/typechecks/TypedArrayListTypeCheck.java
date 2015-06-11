@@ -27,9 +27,7 @@ public abstract class TypedArrayListTypeCheck implements TypeCheck {
 
     @Override
     public Argument toArgument(String name, String key, TypeName typeName) {
-        Argument argument = new Argument(name, key, operationGet(), typeName);
-        argument.setPutOperation(operationPut());
-        return argument;
+        return new Argument(name, key, operationGet(), operationPut(), typeName);
     }
 
     protected abstract String operationGet();

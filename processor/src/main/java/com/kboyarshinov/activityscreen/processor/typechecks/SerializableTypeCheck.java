@@ -19,7 +19,7 @@ public final class SerializableTypeCheck implements TypeCheck {
     @Override
     public Argument toArgument(String name, String key, TypeName typeName) {
         String serializable = "Serializable";
-        Argument argument = new Argument(name, key, serializable, typeName);
+        Argument argument = new Argument(name, key, serializable, serializable, typeName);
         argument.setRequiresCast(true);
         return argument;
     }

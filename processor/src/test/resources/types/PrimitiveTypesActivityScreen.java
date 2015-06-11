@@ -39,14 +39,16 @@ public final class PrimitiveTypesActivityScreen {
 
     public Intent toIntent(Activity activity) {
         Intent intent = new Intent(activity, PrimitiveTypesActivity.class);
-        intent.putExtra("field1", field1);
-        intent.putExtra("field2", field2);
-        intent.putExtra("field3", field3);
-        intent.putExtra("field4", field4);
-        intent.putExtra("field5", field5);
-        intent.putExtra("field6", field6);
-        intent.putExtra("field7", field7);
-        intent.putExtra("field8", field8);
+        Bundle bundle = new Bundle();
+        bundle.putInt("field1", field1);
+        bundle.putFloat("field2", field2);
+        bundle.putDouble("field3", field3);
+        bundle.putByte("field4", field4);
+        bundle.putBoolean("field5", field5);
+        bundle.putChar("field6", field6);
+        bundle.putShort("field7", field7);
+        bundle.putLong("field8", field8);
+        intent.putExtras(bundle);
         return intent;
     }
 

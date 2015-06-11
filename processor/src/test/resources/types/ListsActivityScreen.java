@@ -34,9 +34,11 @@ public final class ListsActivityScreen {
 
     public Intent toIntent(Activity activity) {
         Intent intent = new Intent(activity, ListsActivity.class);
-        intent.putStringArrayListExtra("list1", list1);
-        intent.putIntegerArrayListExtra("list2", list2);
-        intent.putCharSequenceArrayListExtra("list3", list3);
+        Bundle bundle = new Bundle();
+        bundle.putStringArrayList("list1", list1);
+        bundle.putIntegerArrayList("list2", list2);
+        bundle.putCharSequenceArrayList("list3", list3);
+        intent.putExtras(bundle);
         return intent;
     }
 
