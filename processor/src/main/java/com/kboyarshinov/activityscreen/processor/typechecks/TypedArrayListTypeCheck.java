@@ -10,11 +10,13 @@ import java.util.ArrayList;
 /**
  * @author Kirill Boyarshinov
  */
-public abstract class TypedArrayListTypeCheck implements TypeCheck {
+public class TypedArrayListTypeCheck implements TypeCheck {
     private final String typeClassName;
+    private final String operation;
 
-    public TypedArrayListTypeCheck(String typeClassName) {
+    public TypedArrayListTypeCheck(String typeClassName, String operation) {
         this.typeClassName = typeClassName;
+        this.operation = operation;
     }
 
     @Override
@@ -27,9 +29,6 @@ public abstract class TypedArrayListTypeCheck implements TypeCheck {
 
     @Override
     public Argument toArgument(String name, String key, TypeName typeName) {
-        return new Argument(name, key, operationGet(), operationPut(), typeName);
+        return new Argument(name, key, operation, operation, typeName);
     }
-
-    protected abstract String operationGet();
-    protected abstract String operationPut();
 }

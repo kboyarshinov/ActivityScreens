@@ -112,39 +112,9 @@ public class Argument {
         simpleOperations.put("java.io.Serializable", "Serializable");
 
         typeChecks.add(new ParcelableTypeCheck());
-        typeChecks.add(new TypedArrayListTypeCheck(String.class.getName()) {
-            @Override
-            protected String operationGet() {
-                return "StringArrayList";
-            }
-
-            @Override
-            protected String operationPut() {
-                return "StringArrayList";
-            }
-        });
-        typeChecks.add(new TypedArrayListTypeCheck(Integer.class.getName()) {
-            @Override
-            protected String operationGet() {
-                return "IntegerArrayList";
-            }
-
-            @Override
-            protected String operationPut() {
-                return "IntegerArrayList";
-            }
-        });
-        typeChecks.add(new TypedArrayListTypeCheck(CharSequence.class.getName()) {
-            @Override
-            protected String operationGet() {
-                return "CharSequenceArrayList";
-            }
-
-            @Override
-            protected String operationPut() {
-                return "CharSequenceArrayList";
-            }
-        });
+        typeChecks.add(new TypedArrayListTypeCheck(String.class.getName(), "StringArrayList"));
+        typeChecks.add(new TypedArrayListTypeCheck(Integer.class.getName(), "IntegerArrayList"));
+        typeChecks.add(new TypedArrayListTypeCheck(CharSequence.class.getName(), "CharSequenceArrayList"));
         typeChecks.add(new ArrayTypeCheck("android.os.Parcelable") {
             @Override
             protected String operationPut() {
