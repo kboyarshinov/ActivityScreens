@@ -38,6 +38,6 @@ android {
 
 dependencies {
     compile 'com.android.support:appcompat-v7:22.0.0'
-    compile 'com.kboyarshinov.activityscreens:annotation:0.1'
-    apt 'com.kboyarshinov.activityscreens:processor:0.1'
+    compile 'com.kboyarshinov.activityscreens:annotation:1.0'
+    apt 'com.kboyarshinov.activityscreens:processor:1.0'
 }

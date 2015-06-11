@@ -7,7 +7,7 @@
     <groupId>com.kboyarshinov.activityscreens</groupId>
     <artifactId>activityscreens</artifactId>
     <packaging>pom</packaging>
-    <version>0.1</version>
+    <version>1.0</version>
     <modules>
         <module>annotation</module>
         <module>processor</module>
