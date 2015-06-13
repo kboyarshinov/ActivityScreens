@@ -5,7 +5,7 @@
     <parent>
         <artifactId>activityscreens</artifactId>
         <groupId>com.kboyarshinov.activityscreens</groupId>
-        <version>0.1</version>
+        <version>1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.squareup</groupId>
             <artifactId>javapoet</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
         </dependency>
 
         <!-- Annotation project -->
@@ -57,6 +57,12 @@
             <artifactId>android</artifactId>
             <scope>test</scope>
             <version>${android.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.3.2</version>
         </dependency>
     </dependencies>
 

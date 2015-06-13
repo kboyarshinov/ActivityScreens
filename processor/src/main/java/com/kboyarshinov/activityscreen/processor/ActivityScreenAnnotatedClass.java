@@ -23,6 +23,20 @@ public class ActivityScreenAnnotatedClass {
         this.annotatedClassElement = classElement;
     }
 
+    /**
+     * Checks if a field (with the given name) is already in this class
+     */
+    public boolean containsField(ActivityArgAnnotatedField field) {
+        return requiredFields.contains(field) || optionalFields.contains(field);
+    }
+
+    /**
+     * Checks if a key for a bundle has already been used
+     */
+    public boolean containsBundleKey(ActivityArgAnnotatedField field) {
+        return bundleKeyMap.get(field.getKey()) != null;
+    }
+
     public void addFieldClass(ActivityArgAnnotatedField field) {
         bundleKeyMap.put(field.getKey(), field);
         if (field.isRequired()) {
@@ -38,6 +52,10 @@ public class ActivityScreenAnnotatedClass {
 
     public Set<ActivityArgAnnotatedField> getOptionalFields() {
         return optionalFields;
+    }
+
+    public ActivityArgAnnotatedField getFieldByKey(String key) {
+        return bundleKeyMap.get(key);
     }
 
     /**

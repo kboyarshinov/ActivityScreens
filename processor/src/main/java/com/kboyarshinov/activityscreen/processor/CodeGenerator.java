@@ -1,6 +1,9 @@
 package com.kboyarshinov.activityscreen.processor;
 
+import com.google.common.collect.Iterables;
+import com.kboyarshinov.activityscreen.processor.typechecks.TypeElements;
 import com.squareup.javapoet.*;
+import org.apache.commons.lang3.text.WordUtils;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Modifier;
@@ -8,8 +11,12 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Kirill Boyarshinov
@@ -19,39 +26,16 @@ public final class CodeGenerator {
     private final ClassName activityClassName = ClassName.get("android.app", "Activity");
     private final ClassName bundleClassName = ClassName.get("android.os", "Bundle");
 
-    private final Map<String, String> argumentTypes = new HashMap<String, String>(20);
-
     private final Elements elementUtils;
-
+    private final Types typeUtils;
     private final Filer filer;
+    private final TypeElements typeElements;
 
-    public CodeGenerator(Elements elementUtils, Filer filer) {
+    public CodeGenerator(Elements elementUtils, Types typeUtils, Filer filer) {
         this.elementUtils = elementUtils;
+        this.typeUtils = typeUtils;
         this.filer = filer;
-        fillArguments();
-    }
-
-    private void fillArguments() {
-        argumentTypes.put("java.lang.String", "String");
-        argumentTypes.put("int", "Int");
-        argumentTypes.put("java.lang.Integer", "Int");
-        argumentTypes.put("long", "Long");
-        argumentTypes.put("java.lang.Long", "Long");
-        argumentTypes.put("double", "Double");
-        argumentTypes.put("java.lang.Double", "Double");
-        argumentTypes.put("short", "Short");
-        argumentTypes.put("java.lang.Short", "Short");
-        argumentTypes.put("float", "Float");
-        argumentTypes.put("java.lang.Float", "Float");
-        argumentTypes.put("byte", "Byte");
-        argumentTypes.put("java.lang.Byte", "Byte");
-        argumentTypes.put("boolean", "Boolean");
-        argumentTypes.put("java.lang.Boolean", "Boolean");
-        argumentTypes.put("char", "Char");
-        argumentTypes.put("java.lang.Character", "Char");
-        argumentTypes.put("java.lang.CharSequence", "CharSequence");
-        argumentTypes.put("android.os.Bundle", "Bundle");
-        argumentTypes.put("android.os.Parcelable", "Parcelable");
+        this.typeElements = new TypeElements(elementUtils, typeUtils);
     }
 
     /**
@@ -59,68 +43,99 @@ public final class CodeGenerator {
      *
      * @throws java.io.IOException
      */
-    public void generate(Collection<ActivityScreenAnnotatedClass> annotatedClasses) throws IOException {
+    public void generate(Collection<ActivityScreenAnnotatedClass> annotatedClasses) throws IOException, UnsupportedTypeException {
         for (ActivityScreenAnnotatedClass annotatedClass : annotatedClasses) {
             TypeElement annotatedClassElement = annotatedClass.getTypeElement();
             Name activitySimpleName = annotatedClassElement.getSimpleName();
             String screenClassName = activitySimpleName + ActivityScreenAnnotatedClass.SUFFIX;
+            PackageElement pkg = elementUtils.getPackageOf(annotatedClassElement);
+            String packageName = pkg.isUnnamed() ? "" : pkg.getQualifiedName().toString();
+            ClassName activityScreenClassName = ClassName.get(packageName, screenClassName);
 
-            List<ParameterSpec> parameters = new ArrayList<ParameterSpec>(annotatedClass.getRequiredFields().size());
+            TypeSpec.Builder classBuilder = TypeSpec.classBuilder(screenClassName);
+
+            // collect parameters
             Set<ActivityArgAnnotatedField> requiredFields = annotatedClass.getRequiredFields();
-            for (ActivityArgAnnotatedField requiredField : requiredFields) {
-                parameters.add(ParameterSpec.builder(parseType(requiredField), requiredField.getKey()).build());
+            Set<ActivityArgAnnotatedField> optionalFields = annotatedClass.getOptionalFields();
+            List<Argument> requiredArguments = new ArrayList<Argument>(requiredFields.size());
+            List<Argument> optionalArguments = new ArrayList<Argument>(optionalFields.size());
+            for (ActivityArgAnnotatedField field : requiredFields) {
+                requiredArguments.add(Argument.from(field, typeElements));
+            }
+            for (ActivityArgAnnotatedField field : optionalFields) {
+                optionalArguments.add(Argument.from(field, typeElements));
             }
 
-            MethodSpec openMethod = generateOpenMethod(false, parameters);
-            MethodSpec openForResultMethod = generateOpenMethod(true, parameters);
-            MethodSpec createIntentMethod = generateCreateIntentMethod(activitySimpleName, parameters);
-            MethodSpec injectMethod = generateInjectMethod(annotatedClassElement, parameters);
+            // add fields
+            for (Argument argument : requiredArguments) {
+                classBuilder.addField(argument.asField(Modifier.PUBLIC, Modifier.FINAL));
+            }
+            for (Argument argument : optionalArguments) {
+                classBuilder.addField(argument.asField(Modifier.PRIVATE));
+            }
 
-            MethodSpec privateConstructor = MethodSpec.constructorBuilder().
-                    addModifiers(Modifier.PRIVATE).build();
+            // add constructor
+            MethodSpec.Builder costructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
+            for (Argument argument : requiredArguments) {
+                costructorBuilder.addParameter(argument.asParameter());
+                String name = argument.name();
+                costructorBuilder.addStatement("this.$L = $L", name, name);
+            }
+            MethodSpec constructor = costructorBuilder.build();
+            classBuilder.addMethod(constructor);
 
-            TypeSpec.Builder screenBuilder = TypeSpec.classBuilder(screenClassName).
-                    addModifiers(Modifier.PUBLIC, Modifier.FINAL).
-                    addMethod(privateConstructor).
-                    addMethod(openMethod).
+            // add setters
+            for (Argument argument : optionalArguments) {
+                String name = argument.name();
+                MethodSpec setter = MethodSpec.methodBuilder(String.format("set%s", WordUtils.capitalize(argument.name()))).
+                    addStatement("this.$L = $L", name, name).
+                    addStatement("return this").
+                    returns(activityScreenClassName).
+                    addModifiers(Modifier.PUBLIC).build();
+                classBuilder.addMethod(setter);
+            }
+
+            // add getters
+            for (Argument argument : optionalArguments) {
+                MethodSpec getter = MethodSpec.methodBuilder(String.format("get%s", WordUtils.capitalize(argument.name()))).
+                    addStatement("return $L", argument.name()).
+                    returns(argument.typeName()).
+                    addModifiers(Modifier.PUBLIC).build();
+                classBuilder.addMethod(getter);
+            }
+
+            // add open, openForResult, create methods
+            MethodSpec openMethod = generateOpenMethod(false);
+            MethodSpec openForResultMethod = generateOpenMethod(true);
+            MethodSpec createIntentMethod = generateToIntentMethod(activitySimpleName, requiredArguments, optionalArguments);
+            classBuilder.addMethod(openMethod).
                     addMethod(openForResultMethod).
                     addMethod(createIntentMethod);
-            if (!parameters.isEmpty()) {
-                screenBuilder.addMethod(injectMethod);
+
+            // add inject method if needed
+            if (!requiredArguments.isEmpty() || !optionalArguments.isEmpty()) {
+                MethodSpec injectMethod = generateInjectMethod(annotatedClassElement, Iterables.concat(requiredArguments, optionalArguments));
+                classBuilder.addMethod(injectMethod);
             }
 
-            TypeSpec screenClass = screenBuilder.build();
-            PackageElement pkg = elementUtils.getPackageOf(annotatedClassElement);
+            if (!requiredArguments.isEmpty()) {
+                MethodSpec checkArgumentsMethod = generateCheckArgumentsMethod(requiredArguments);
+                classBuilder.addMethod(checkArgumentsMethod);
+            }
 
-            String packageName = pkg.isUnnamed() ? "" : pkg.getQualifiedName().toString();
+            // write class to file
+            TypeSpec screenClass = classBuilder.addModifiers(Modifier.PUBLIC, Modifier.FINAL).build();
             JavaFile javaFile = JavaFile.builder(packageName, screenClass).indent("    ").build();
-
             javaFile.writeTo(filer);
         }
     }
 
-    private TypeName parseType(ActivityArgAnnotatedField field) {
-        if (field.isPrimitive()) {
-            return TypeName.get(field.getElement().asType());
-        }
-        return null;
-    }
-
-    private MethodSpec generateOpenMethod(boolean forResult, List<ParameterSpec> parameters) {
+    private MethodSpec generateOpenMethod(boolean forResult) {
         MethodSpec.Builder openMethodBuilder = MethodSpec.methodBuilder(forResult ? "openForResult" : "open").
-                addModifiers(Modifier.PUBLIC, Modifier.STATIC).
+                addModifiers(Modifier.PUBLIC).
                 returns(void.class).
                 addParameter(activityClassName, "activity");
-        if (parameters.isEmpty()) {
-            openMethodBuilder.addStatement("Intent intent = createIntent(activity)");
-        } else {
-            openMethodBuilder.addStatement("Intent intent = createIntent(activity, " + toParametersString(parameters) + ")");
-        }
-        if (!parameters.isEmpty()) {
-            for (ParameterSpec parameter : parameters) {
-                openMethodBuilder.addParameter(parameter);
-            }
-        }
+        openMethodBuilder.addStatement("Intent intent = toIntent(activity)");
         if (forResult) {
             openMethodBuilder.addParameter(TypeName.INT, "requestCode");
             openMethodBuilder.addStatement("activity.startActivityForResult(intent, requestCode)");
@@ -130,47 +145,63 @@ public final class CodeGenerator {
         return openMethodBuilder.build();
     }
 
-    private String toParametersString(List<ParameterSpec> parameters) {
-        StringBuilder builder = new StringBuilder();
-        boolean firstParameter = true;
-        for (Iterator<ParameterSpec> i = parameters.iterator(); i.hasNext();) {
-            ParameterSpec parameter = i.next();
-            if (!firstParameter) builder.append(", ");
-                builder.append(parameter.name);
-            firstParameter = false;
-        }
-        return builder.toString();
-    }
-
-    private MethodSpec generateCreateIntentMethod(Name activitySimpleName, List<ParameterSpec> parameters) {
-        MethodSpec.Builder createIntentBuilder = MethodSpec.methodBuilder("createIntent").
-                addModifiers(Modifier.PUBLIC, Modifier.STATIC).
+    private MethodSpec generateToIntentMethod(Name activitySimpleName, List<Argument> requiredArguments, List<Argument> optionalArguments) {
+        MethodSpec.Builder createIntentBuilder = MethodSpec.methodBuilder("toIntent").
+                addModifiers(Modifier.PUBLIC).
                 addParameter(activityClassName, "activity").
                 returns(intentClassName);
         createIntentBuilder.addStatement("$T intent = new $T(activity, $L.class)", intentClassName, intentClassName, activitySimpleName);
-        if (!parameters.isEmpty()) {
-            for (ParameterSpec parameter : parameters) {
-                createIntentBuilder.addParameter(parameter);
-                createIntentBuilder.addStatement("intent.putExtra($S, $L)", parameter.name, parameter.name);
-            }
+        if (!requiredArguments.isEmpty() || !optionalArguments.isEmpty()) {
+            createIntentBuilder.addStatement("$T bundle = new $T()", bundleClassName, bundleClassName);
+        }
+        for (Argument argument : requiredArguments) {
+            argument.generatePutMethod(createIntentBuilder);
+        }
+        for (Argument argument : optionalArguments) {
+            boolean primitive = argument.typeName().isPrimitive();
+            if (!primitive)
+                createIntentBuilder.beginControlFlow("if ($L != null)", argument.name());
+            argument.generatePutMethod(createIntentBuilder);
+            if (!primitive)
+                createIntentBuilder.endControlFlow();
+        }
+        if (!requiredArguments.isEmpty() || !optionalArguments.isEmpty()) {
+            createIntentBuilder.addStatement("intent.putExtras(bundle)");
         }
         createIntentBuilder.addStatement("return intent");
         return createIntentBuilder.build();
     }
 
-    private MethodSpec generateInjectMethod(TypeElement annotatedClassElement, List<ParameterSpec> parameters) {
-        MethodSpec.Builder injectBuilder = MethodSpec.methodBuilder("inject").
-                addModifiers(Modifier.PUBLIC, Modifier.STATIC).
-                addParameter(TypeName.get(annotatedClassElement.asType()), "activity").
-                returns(void.class);
-        injectBuilder.addStatement("$T bundle = activity.getIntent().getExtras()", bundleClassName);
-        for (ParameterSpec parameter : parameters) {
-            injectBuilder.addStatement("activity.$L = bundle.get$L($S)", parameter.name, getArgumentTypeString(parameter), parameter.name);
+    private MethodSpec generateCheckArgumentsMethod(List<Argument> requiredArguments) {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("checkArguments").
+            addModifiers(Modifier.PRIVATE, Modifier.STATIC).
+            addParameter(bundleClassName, "bundle").
+            returns(void.class);
+        ClassName exception = ClassName.get(IllegalStateException.class);
+        for (Argument argument : requiredArguments) {
+            String key = argument.key();
+            builder.beginControlFlow("if (!bundle.containsKey($S))", key);
+            builder.addStatement("throw new $T(\"Required argument $L with key '$L' is not set\")", exception, argument.name(), key);
+            builder.endControlFlow();
         }
-        return injectBuilder.build();
+        return builder.build();
     }
 
-    private String getArgumentTypeString(ParameterSpec parameterSpec) {
-        return argumentTypes.get(parameterSpec.type.toString());
+    private MethodSpec generateInjectMethod(TypeElement annotatedClassElement, Iterable<Argument> arguments) {
+        TypeName activityTypeName = TypeName.get(annotatedClassElement.asType());
+        MethodSpec.Builder injectBuilder = MethodSpec.methodBuilder("inject").
+                addModifiers(Modifier.PUBLIC, Modifier.STATIC).
+                addParameter(activityTypeName, "activity").
+                returns(void.class);
+        ClassName npe = ClassName.get(NullPointerException.class);
+        injectBuilder.addStatement("$T bundle = activity.getIntent().getExtras()", bundleClassName);
+        injectBuilder.beginControlFlow("if (bundle == null)");
+        injectBuilder.addStatement("throw new $T(\"$T has empty Bundle. Use open() or openForResult() to launch activity.\")", npe, activityTypeName);
+        injectBuilder.endControlFlow();
+        injectBuilder.addStatement("checkArguments(bundle)");
+        for (Argument argument : arguments) {
+            argument.generateGetMethod(injectBuilder);
+        }
+        return injectBuilder.build();
     }
 }

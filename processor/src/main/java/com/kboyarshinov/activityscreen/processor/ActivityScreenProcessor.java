@@ -7,12 +7,14 @@ import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,7 +39,7 @@ public class ActivityScreenProcessor extends AbstractProcessor {
         elementUtils = processingEnv.getElementUtils();
         filer = processingEnv.getFiler();
         messager = processingEnv.getMessager();
-        codeGenerator = new CodeGenerator(elementUtils, filer);
+        codeGenerator = new CodeGenerator(elementUtils, typeUtils, filer);
     }
 
     @Override
@@ -88,16 +90,6 @@ public class ActivityScreenProcessor extends AbstractProcessor {
         return true;
     }
 
-    private boolean isAnnotatedActivity(TypeElement classElement) {
-        // Check Activity inheritance
-        if (!isInheritsActivity(classElement)) {
-            return false;
-        }
-        // Check Activity has @ActivityScreen annotation
-        ActivityScreen annotation = classElement.getAnnotation(ActivityScreen.class);
-        return annotation != null;
-    }
-
     private boolean isInheritsActivity(TypeElement classElement) {
         TypeElement activityType = elementUtils.getTypeElement("android.app.Activity");
         return activityType != null && typeUtils.isSubtype(classElement.asType(), activityType.asType());
@@ -112,37 +104,6 @@ public class ActivityScreenProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(ActivityArg.class)) {
-            if (annotatedElement.getKind() != ElementKind.FIELD) {
-                error(annotatedElement, "Only field can be annotated with @%s", ActivityArg.class.getSimpleName());
-                return true;
-            }
-
-            TypeElement enclosingElement = (TypeElement) annotatedElement.getEnclosingElement();
-            Name activityName = enclosingElement.getQualifiedName();
-
-            if (!activityClasses.containsKey(activityName)) { // check if already processed
-                if (!isAnnotatedActivity(enclosingElement)) {
-                    error(annotatedElement, "@ActivityArg can only be used on fields in @ActivityScreen annotated activity (%s.%s)",
-                            activityName, annotatedElement.getSimpleName());
-                    return true;
-                }
-                if (!isValidActivityClass(enclosingElement)) {
-                    return true;
-                }
-                activityClasses.put(activityName, new ActivityScreenAnnotatedClass(enclosingElement));
-            }
-
-            if (!isValidField(annotatedElement)) {
-                error(annotatedElement, "@ActivityArg fields must not be private, protected, final or static (%s.%s)",
-                        activityName, annotatedElement);
-                continue;
-            }
-
-            ActivityScreenAnnotatedClass activityScreenAnnotatedClass = activityClasses.get(activityName);
-            activityScreenAnnotatedClass.addFieldClass(new ActivityArgAnnotatedField(annotatedElement));
-
-        }
         for (Element annotatedElement : roundEnv.getElementsAnnotatedWith(ActivityScreen.class)) {
             if (annotatedElement.getKind() != ElementKind.CLASS) {
                 error(annotatedElement, "Only classes can be annotated with @%s", ActivityScreen.class.getSimpleName());
@@ -157,12 +118,41 @@ public class ActivityScreenProcessor extends AbstractProcessor {
                 }
                 activityClasses.put(activityName, new ActivityScreenAnnotatedClass(typeElement));
             }
+
+            // process fields with @ActivityArg annotation
+            List<? extends Element> enclosedElements = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
+            for (Element enclosedElement : enclosedElements) {
+                ActivityArg activityArg = enclosedElement.getAnnotation(ActivityArg.class);
+                if (activityArg == null) {
+                    continue;
+                }
+                if (!isValidField(enclosedElement)) {
+                    error(enclosedElement, "@ActivityArg fields must not be private, protected, final or static (%s.%s)",
+                            activityName, enclosedElement);
+                    continue;
+                }
+
+                ActivityScreenAnnotatedClass activityScreenAnnotatedClass = activityClasses.get(activityName);
+                ActivityArgAnnotatedField annotatedField = new ActivityArgAnnotatedField(enclosedElement);
+                if (activityScreenAnnotatedClass.containsBundleKey(annotatedField)) {
+                    //  key for bundle is already in use
+                    ActivityArgAnnotatedField otherField = activityScreenAnnotatedClass.getFieldByKey(annotatedField.getKey());
+                    error(annotatedField.getElement(),
+                            "The bundle key '%s' for field %s in %s is already used by another field %s)",
+                            annotatedField.getKey(), annotatedField.getVariableName(),
+                            activityName, otherField.getVariableName());
+                    return true;
+                }
+                activityScreenAnnotatedClass.addFieldClass(annotatedField);
+            }
         }
 
         try {
             codeGenerator.generate(activityClasses.values());
         } catch (IOException e) {
             error(null, e.getMessage());
+        } catch (UnsupportedTypeException e) {
+            error(e.getElement(), e.getMessage());
         }
 
         activityClasses.clear();

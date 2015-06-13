@@ -21,12 +21,25 @@ public class ProcessorTest {
     private JavaFileObject privateActivity = JavaFileObjects.forResource("errors/PrivateActivity.java");
     private JavaFileObject abstractActivity = JavaFileObjects.forResource("errors/AbstractActivity.java");
     private JavaFileObject interfaceClass = JavaFileObjects.forResource("errors/Interface.java");
-    private JavaFileObject argFieldInNonActivity = JavaFileObjects.forResource("errors/ArgFieldInNonActivity.java");
     private JavaFileObject finalFieldActivity = JavaFileObjects.forResource("errors/FinalFieldActivity.java");
     private JavaFileObject staticFieldActivity = JavaFileObjects.forResource("errors/StaticFieldActivity.java");
     private JavaFileObject privateFieldActivity = JavaFileObjects.forResource("errors/PrivateFieldActivity.java");
     private JavaFileObject protectedFieldActivity = JavaFileObjects.forResource("errors/ProtectedFieldActivity.java");
     private JavaFileObject privateStaticFinalFieldActivity = JavaFileObjects.forResource("errors/PrivateStaticFinalFieldActivity.java");
+    private JavaFileObject duplicateKeysFieldsActivity = JavaFileObjects.forResource("errors/DuplicateKeysFieldsActivity.java");
+    private JavaFileObject argumentWithCustomKeyActivity = JavaFileObjects.forResource("misc/KeyAndNameActivity.java");
+    private JavaFileObject argumentWithCustomKeyActivityScreen = JavaFileObjects.forResource("misc/KeyAndNameActivityScreen.java");
+
+    private JavaFileObject primitiveTypesActivity = JavaFileObjects.forResource("types/PrimitiveTypesActivity.java");
+    private JavaFileObject primitiveTypesActivityScreen = JavaFileObjects.forResource("types/PrimitiveTypesActivityScreen.java");
+    private JavaFileObject primitiveArraysActivity = JavaFileObjects.forResource("types/PrimitiveArraysActivity.java");
+    private JavaFileObject primitiveArraysActivityScreen = JavaFileObjects.forResource("types/PrimitiveArraysActivityScreen.java");
+    private JavaFileObject primitiveWrappersActivity = JavaFileObjects.forResource("types/PrimitiveWrappersActivity.java");
+    private JavaFileObject primitiveWrappersActivityScreen = JavaFileObjects.forResource("types/PrimitiveWrappersActivityScreen.java");
+    private JavaFileObject classesActivity = JavaFileObjects.forResource("types/ClassesActivity.java");
+    private JavaFileObject classesActivityScreen = JavaFileObjects.forResource("types/ClassesActivityScreen.java");
+    private JavaFileObject listsActivity = JavaFileObjects.forResource("types/ListsActivity.java");
+    private JavaFileObject listsActivityScreen = JavaFileObjects.forResource("types/ListsActivityScreen.java");
 
     @Test
     public void emptyActivity() {
@@ -36,6 +49,56 @@ public class ProcessorTest {
             compilesWithoutError().
             and().
             generatesSources(emptyActivityScreen);
+    }
+
+    @Test
+    public void primitiveTypes() {
+        ASSERT.about(javaSource()).
+            that(primitiveTypesActivity).
+            processedWith(new ActivityScreenProcessor()).
+            compilesWithoutError().
+            and().
+            generatesSources(primitiveTypesActivityScreen);
+    }
+
+    @Test
+    public void primitiveArrays() {
+        ASSERT.about(javaSource()).
+                that(primitiveArraysActivity).
+                processedWith(new ActivityScreenProcessor()).
+                compilesWithoutError().
+                and().
+                generatesSources(primitiveArraysActivityScreen);
+    }
+
+    @Test
+    public void primitiveWrappers() {
+        ASSERT.about(javaSource()).
+                that(primitiveWrappersActivity).
+                processedWith(new ActivityScreenProcessor()).
+                compilesWithoutError().
+                and().
+                generatesSources(primitiveWrappersActivityScreen);
+    }
+
+    @Test
+    public void classes() {
+        ASSERT.about(javaSource()).
+                that(classesActivity).
+                processedWith(new ActivityScreenProcessor()).
+                compilesWithoutError().
+                and().
+                generatesSources(classesActivityScreen);
+    }
+
+    @Test
+    public void lists() {
+        ASSERT.about(javaSource()).
+                that(listsActivity).
+                processedWith(new ActivityScreenProcessor()).
+                compilesWithoutError().
+                and().
+                generatesSources(listsActivityScreen);
     }
 
     @Test
@@ -65,17 +128,27 @@ public class ProcessorTest {
     @Test
     public void interfaceClass() {
         ASSERT.about(javaSource()).
-                that(interfaceClass).
+            that(interfaceClass).
+            processedWith(new ActivityScreenProcessor()).
+            failsToCompile();
+    }
+
+    @Test
+    public void duplicateKeys() {
+        ASSERT.about(javaSource()).
+                that(duplicateKeysFieldsActivity).
                 processedWith(new ActivityScreenProcessor()).
                 failsToCompile();
     }
 
     @Test
-    public void ArgFieldInNonActivity() {
+    public void argumentWithCustomKey() {
         ASSERT.about(javaSource()).
-            that(argFieldInNonActivity).
-            processedWith(new ActivityScreenProcessor()).
-            failsToCompile();
+                that(argumentWithCustomKeyActivity).
+                processedWith(new ActivityScreenProcessor()).
+                compilesWithoutError().
+                and().
+                generatesSources(argumentWithCustomKeyActivityScreen);
     }
 
     @Test
