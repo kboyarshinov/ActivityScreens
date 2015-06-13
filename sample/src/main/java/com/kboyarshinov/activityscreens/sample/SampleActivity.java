@@ -9,15 +9,16 @@ import com.kboyarshinov.activityscreens.annotation.ActivityScreen;
 import com.kboyarshinov.activityscreens.sample.model.ParcelableClass;
 
 @ActivityScreen
-public class TestActivity extends ActionBarActivity {
+public class SampleActivity extends ActionBarActivity {
 
     @ActivityArg
-    ParcelableClass[] array;
+    long id;
+    @ActivityArg
+    String title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TestActivityScreen.inject(this);
-        assert array != null;
+        SampleActivityScreen.inject(this);
     }
 }

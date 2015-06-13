@@ -16,11 +16,7 @@ public class MainActivity extends ActionBarActivity {
         findViewById(R.id.open_test_activity_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ParcelableClass[] array = new ParcelableClass[5];
-                for (int i = 0; i < array.length; i++) {
-                    array[i] = new ParcelableClass(i);
-                }
-                new TestActivityScreen(array).open(MainActivity.this);
+                new SampleActivityScreen(3, "Sample title").open(MainActivity.this);
             }
         });
     }
