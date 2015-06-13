@@ -117,12 +117,7 @@ public class Argument {
         typeChecks.add(new TypedArrayListTypeCheck(String.class.getName(), "StringArrayList"));
         typeChecks.add(new TypedArrayListTypeCheck(Integer.class.getName(), "IntegerArrayList"));
         typeChecks.add(new TypedArrayListTypeCheck(CharSequence.class.getName(), "CharSequenceArrayList"));
-        typeChecks.add(new ArrayTypeCheck("android.os.Parcelable") {
-            @Override
-            protected String operationPut() {
-                return "ParcelableArray";
-            }
-        });
+        typeChecks.add(new ArrayTypeCheck("android.os.Parcelable", "ParcelableArray"));
         typeChecks.add(new SerializableTypeCheck());
     }
 

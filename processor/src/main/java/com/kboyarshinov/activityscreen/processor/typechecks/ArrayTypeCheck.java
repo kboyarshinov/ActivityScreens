@@ -10,11 +10,13 @@ import javax.lang.model.type.TypeMirror;
 /**
  * @author Kirill Boyarshinov
  */
-public abstract class ArrayTypeCheck implements TypeCheck {
+public class ArrayTypeCheck implements TypeCheck {
     private final String typeClassName;
+    private final String operationPut;
 
-    public ArrayTypeCheck(String typeClassName) {
+    public ArrayTypeCheck(String typeClassName, String operationPut) {
         this.typeClassName = typeClassName;
+        this.operationPut = operationPut;
     }
 
     @Override
@@ -26,9 +28,6 @@ public abstract class ArrayTypeCheck implements TypeCheck {
 
     @Override
     public Argument toArgument(String name, String key, TypeName typeName) {
-        String operation = operationPut();
-        return new ParcelableArrayArgument(name, key, operation, typeName);
+        return new ParcelableArrayArgument(name, key, operationPut, typeName);
     }
-
-    protected abstract String operationPut();
 }
