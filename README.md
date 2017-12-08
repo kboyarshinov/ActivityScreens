@@ -1,4 +1,10 @@
-# ActivityScreens
+# [DEPRECATED] ActivityScreens
+
+## Deprecation note
+
+Library was never finished and released and there are few alternatives exist: [Dart & Henson](https://github.com/f2prateek/dart) or [IntentBuilder](https://github.com/emilsjolander/IntentBuilder).
+
+## Description
 
 Android library that simplifies passing arguments between activities using generated classes aka `Screens`.
 Read the motivation about it in [blog post](http://kboyarshinov.com/android/my-journey-in-developing-android-library/).
