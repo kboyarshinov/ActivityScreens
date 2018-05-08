@@ -7,7 +7,6 @@ Library was never finished and released and there are few alternatives exist: [D
 ## Description
 
 Android library that simplifies passing arguments between activities using generated classes aka `Screens`.
-Read the motivation about it in [blog post](http://kboyarshinov.com/android/my-journey-in-developing-android-library/).
 
 Example:
 
